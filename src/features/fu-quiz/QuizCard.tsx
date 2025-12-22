@@ -9,7 +9,12 @@ import { getRandomProblem } from "@/data/quizProblems";
 import { generateFuOptions } from "@/lib/fu-calculator";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { QuizProblem, Wind, WaitType, QuizCategory } from "@/lib/mahjong-types";
+import type {
+  QuizProblem,
+  Wind,
+  WaitType,
+  QuizCategory,
+} from "@/lib/mahjong-types";
 
 interface QuizCardProps {
   category: QuizCategory | "all";

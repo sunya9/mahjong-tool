@@ -72,7 +72,13 @@ function parseTermName(name: string): TermPart[] {
   }
 
   // 待ちの種類
-  const waitTypes = ["両面待ち", "嵌張待ち", "辺張待ち", "双碰待ち", "単騎待ち"];
+  const waitTypes = [
+    "両面待ち",
+    "嵌張待ち",
+    "辺張待ち",
+    "双碰待ち",
+    "単騎待ち",
+  ];
   if (waitTypes.includes(name)) {
     return [{ text: name, termKey: name }];
   }

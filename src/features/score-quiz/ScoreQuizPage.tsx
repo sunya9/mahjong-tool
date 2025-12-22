@@ -88,7 +88,9 @@ function QuizSession({ category, setLocation }: QuizSessionProps) {
             <ArrowLeft className="size-4" />
             戻る
           </Button>
-          <h1 className="text-2xl font-bold">点数計算クイズ: {categoryLabel}</h1>
+          <h1 className="text-2xl font-bold">
+            点数計算クイズ: {categoryLabel}
+          </h1>
         </div>
         <div className="rounded-lg bg-muted px-3 py-1.5 text-sm font-medium tabular-nums">
           正解: {stats.correct} / {stats.total}

@@ -265,8 +265,7 @@ function isYakuman(
 ): boolean {
   // 四暗刻チェック: 4つの暗刻/暗槓 + (ツモ or 単騎待ち)
   const closedTriplets = melds.filter(
-    (m) =>
-      (m.type === "koutsu" || m.type === "kantsu") && m.state === "closed",
+    (m) => (m.type === "koutsu" || m.type === "kantsu") && m.state === "closed",
   );
 
   if (closedTriplets.length === 4) {
@@ -323,12 +322,17 @@ function hasYaku(
 
   // 断幺九（タンヤオ）: 全て中張牌（2-8）
   const isTanyao = allTiles.every(
-    (t) => t.suit !== "honor" && (t.value as number) >= 2 && (t.value as number) <= 8,
+    (t) =>
+      t.suit !== "honor" &&
+      (t.value as number) >= 2 &&
+      (t.value as number) <= 8,
   );
   if (isTanyao) return true;
 
   // 対々和（トイトイ）: 全て刻子/槓子
-  const isToitoi = melds.every((m) => m.type === "koutsu" || m.type === "kantsu");
+  const isToitoi = melds.every(
+    (m) => m.type === "koutsu" || m.type === "kantsu",
+  );
   if (isToitoi) return true;
 
   // 役牌チェック

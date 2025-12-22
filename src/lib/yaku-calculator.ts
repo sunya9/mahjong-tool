@@ -193,7 +193,9 @@ export function calculateYaku(
   }
 
   // 対々和（トイトイ）
-  const isToitoi = melds.every((m) => m.type === "koutsu" || m.type === "kantsu");
+  const isToitoi = melds.every(
+    (m) => m.type === "koutsu" || m.type === "kantsu",
+  );
   if (isToitoi) {
     yaku.push({ name: "対々和", han: 2, hanOpen: 2 });
   }
@@ -212,8 +214,7 @@ export function calculateYaku(
 
   // 小三元
   const dragonTriplets = melds.filter(
-    (m) =>
-      (m.type === "koutsu" || m.type === "kantsu") && isDragon(m.tiles[0]),
+    (m) => (m.type === "koutsu" || m.type === "kantsu") && isDragon(m.tiles[0]),
   );
   const isDragonHead = isDragon(head.tiles[0]);
   if (dragonTriplets.length === 2 && isDragonHead) {
@@ -356,8 +357,7 @@ export function isYakuman(
 
   // 大三元
   const dragonTriplets = melds.filter(
-    (m) =>
-      (m.type === "koutsu" || m.type === "kantsu") && isDragon(m.tiles[0]),
+    (m) => (m.type === "koutsu" || m.type === "kantsu") && isDragon(m.tiles[0]),
   );
   if (dragonTriplets.length === 3) return true;
 

@@ -1,5 +1,9 @@
 import { Route, Switch } from "wouter";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { HomePage } from "@/features/home/HomePage";
 import { FuQuizPage } from "@/features/fu-quiz/FuQuizPage";

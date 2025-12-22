@@ -51,7 +51,15 @@ function createTilePool(): TilePool {
       pool.set(`${suit}-${i}`, 4);
     }
   }
-  const honors: HonorType[] = ["east", "south", "west", "north", "white", "green", "red"];
+  const honors: HonorType[] = [
+    "east",
+    "south",
+    "west",
+    "north",
+    "white",
+    "green",
+    "red",
+  ];
   for (const honor of honors) {
     pool.set(`honor-${honor}`, 4);
   }
@@ -73,7 +81,10 @@ function takeTiles(pool: TilePool, tile: Tile, count: number): boolean {
 }
 
 // 面子生成
-function generateShuntsu(pool: TilePool, isOpen: boolean): { meld: Meld; tiles: Tile[] } | null {
+function generateShuntsu(
+  pool: TilePool,
+  isOpen: boolean,
+): { meld: Meld; tiles: Tile[] } | null {
   const suits: TileSuit[] = shuffle(["man", "pin", "sou"]);
   const startNumbers = shuffle([1, 2, 3, 4, 5, 6, 7]);
   for (const suit of suits) {
@@ -95,11 +106,23 @@ function generateShuntsu(pool: TilePool, isOpen: boolean): { meld: Meld; tiles: 
   return null;
 }
 
-function generateKoutsu(pool: TilePool, isOpen: boolean): { meld: Meld; tiles: Tile[] } | null {
+function generateKoutsu(
+  pool: TilePool,
+  isOpen: boolean,
+): { meld: Meld; tiles: Tile[] } | null {
   const allTiles: Tile[] = shuffle([
-    ...Array.from({ length: 9 }, (_, i) => ({ suit: "man" as TileSuit, value: i + 1 })),
-    ...Array.from({ length: 9 }, (_, i) => ({ suit: "pin" as TileSuit, value: i + 1 })),
-    ...Array.from({ length: 9 }, (_, i) => ({ suit: "sou" as TileSuit, value: i + 1 })),
+    ...Array.from({ length: 9 }, (_, i) => ({
+      suit: "man" as TileSuit,
+      value: i + 1,
+    })),
+    ...Array.from({ length: 9 }, (_, i) => ({
+      suit: "pin" as TileSuit,
+      value: i + 1,
+    })),
+    ...Array.from({ length: 9 }, (_, i) => ({
+      suit: "sou" as TileSuit,
+      value: i + 1,
+    })),
     ...["east", "south", "west", "north", "white", "green", "red"].map((h) => ({
       suit: "honor" as TileSuit,
       value: h as HonorType,
@@ -118,11 +141,23 @@ function generateKoutsu(pool: TilePool, isOpen: boolean): { meld: Meld; tiles: T
   return null;
 }
 
-function generateKantsu(pool: TilePool, isOpen: boolean): { meld: Meld; tiles: Tile[] } | null {
+function generateKantsu(
+  pool: TilePool,
+  isOpen: boolean,
+): { meld: Meld; tiles: Tile[] } | null {
   const allTiles: Tile[] = shuffle([
-    ...Array.from({ length: 9 }, (_, i) => ({ suit: "man" as TileSuit, value: i + 1 })),
-    ...Array.from({ length: 9 }, (_, i) => ({ suit: "pin" as TileSuit, value: i + 1 })),
-    ...Array.from({ length: 9 }, (_, i) => ({ suit: "sou" as TileSuit, value: i + 1 })),
+    ...Array.from({ length: 9 }, (_, i) => ({
+      suit: "man" as TileSuit,
+      value: i + 1,
+    })),
+    ...Array.from({ length: 9 }, (_, i) => ({
+      suit: "pin" as TileSuit,
+      value: i + 1,
+    })),
+    ...Array.from({ length: 9 }, (_, i) => ({
+      suit: "sou" as TileSuit,
+      value: i + 1,
+    })),
     ...["east", "south", "west", "north", "white", "green", "red"].map((h) => ({
       suit: "honor" as TileSuit,
       value: h as HonorType,
@@ -143,9 +178,18 @@ function generateKantsu(pool: TilePool, isOpen: boolean): { meld: Meld; tiles: T
 
 function generateHead(pool: TilePool): { head: Head; tiles: Tile[] } | null {
   const allTiles: Tile[] = shuffle([
-    ...Array.from({ length: 9 }, (_, i) => ({ suit: "man" as TileSuit, value: i + 1 })),
-    ...Array.from({ length: 9 }, (_, i) => ({ suit: "pin" as TileSuit, value: i + 1 })),
-    ...Array.from({ length: 9 }, (_, i) => ({ suit: "sou" as TileSuit, value: i + 1 })),
+    ...Array.from({ length: 9 }, (_, i) => ({
+      suit: "man" as TileSuit,
+      value: i + 1,
+    })),
+    ...Array.from({ length: 9 }, (_, i) => ({
+      suit: "pin" as TileSuit,
+      value: i + 1,
+    })),
+    ...Array.from({ length: 9 }, (_, i) => ({
+      suit: "sou" as TileSuit,
+      value: i + 1,
+    })),
     ...["east", "south", "west", "north", "white", "green", "red"].map((h) => ({
       suit: "honor" as TileSuit,
       value: h as HonorType,
@@ -173,8 +217,18 @@ interface WaitConfig {
   waitFromHead?: boolean;
 }
 
-function configureWait(melds: Meld[], head: Head, winType: WinType): WaitConfig | null {
-  const waitTypes: WaitType[] = shuffle(["ryanmen", "kanchan", "penchan", "shanpon", "tanki"]);
+function configureWait(
+  melds: Meld[],
+  head: Head,
+  winType: WinType,
+): WaitConfig | null {
+  const waitTypes: WaitType[] = shuffle([
+    "ryanmen",
+    "kanchan",
+    "penchan",
+    "shanpon",
+    "tanki",
+  ]);
 
   for (const waitType of waitTypes) {
     const result = tryConfigureWait(melds, head, waitType, winType);
@@ -206,7 +260,13 @@ function tryConfigureWait(
         const winTile = isLow
           ? { suit: meld.tiles[0].suit, value: startValue }
           : { suit: meld.tiles[0].suit, value: startValue + 3 };
-        return { waitType, winTile, modifiedMelds, modifiedHead, waitMeldIndex: idx };
+        return {
+          waitType,
+          winTile,
+          modifiedMelds,
+          modifiedHead,
+          waitMeldIndex: idx,
+        };
       }
       return null;
     }
@@ -217,8 +277,17 @@ function tryConfigureWait(
       if (shuntsuIndices.length === 0) return null;
       const idx = randomChoice(shuntsuIndices);
       const meld = modifiedMelds[idx];
-      const winTile = { suit: meld.tiles[0].suit, value: (meld.tiles[0].value as number) + 1 };
-      return { waitType, winTile, modifiedMelds, modifiedHead, waitMeldIndex: idx };
+      const winTile = {
+        suit: meld.tiles[0].suit,
+        value: (meld.tiles[0].value as number) + 1,
+      };
+      return {
+        waitType,
+        winTile,
+        modifiedMelds,
+        modifiedHead,
+        waitMeldIndex: idx,
+      };
     }
     case "penchan": {
       const shuntsuIndices = modifiedMelds
@@ -232,10 +301,17 @@ function tryConfigureWait(
       const idx = randomChoice(shuntsuIndices);
       const meld = modifiedMelds[idx];
       const start = meld.tiles[0].value as number;
-      const winTile = start === 1
-        ? { suit: meld.tiles[0].suit, value: 3 }
-        : { suit: meld.tiles[0].suit, value: 7 };
-      return { waitType, winTile, modifiedMelds, modifiedHead, waitMeldIndex: idx };
+      const winTile =
+        start === 1
+          ? { suit: meld.tiles[0].suit, value: 3 }
+          : { suit: meld.tiles[0].suit, value: 7 };
+      return {
+        waitType,
+        winTile,
+        modifiedMelds,
+        modifiedHead,
+        waitMeldIndex: idx,
+      };
     }
     case "shanpon": {
       const koutsuIndices = modifiedMelds
@@ -248,21 +324,34 @@ function tryConfigureWait(
       if (winType === "ron") {
         modifiedMelds[idx] = { ...meld, state: "open" };
       }
-      return { waitType, winTile, modifiedMelds, modifiedHead, waitMeldIndex: idx };
+      return {
+        waitType,
+        winTile,
+        modifiedMelds,
+        modifiedHead,
+        waitMeldIndex: idx,
+      };
     }
     case "tanki": {
       const winTile = head.tiles[0];
       modifiedHead = { tiles: [winTile, winTile] };
-      return { waitType, winTile, modifiedMelds, modifiedHead, waitFromHead: true };
+      return {
+        waitType,
+        winTile,
+        modifiedMelds,
+        modifiedHead,
+        waitFromHead: true,
+      };
     }
   }
   return null;
 }
 
 // カテゴリに基づいて条件を決定
-function getConditionsForCategory(
-  category: ScoreQuizCategory | "all",
-): { isDealer: boolean; winType: WinType } {
+function getConditionsForCategory(category: ScoreQuizCategory | "all"): {
+  isDealer: boolean;
+  winType: WinType;
+} {
   switch (category) {
     case "dealer":
       return { isDealer: true, winType: randomChoice(["tsumo", "ron"]) };
@@ -287,7 +376,8 @@ export function generateScoreQuizProblem(
   category: ScoreQuizCategory | "all",
 ): ScoreQuizProblem | null {
   const maxAttempts = 100;
-  const { isDealer, winType: categoryWinType } = getConditionsForCategory(category);
+  const { isDealer, winType: categoryWinType } =
+    getConditionsForCategory(category);
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const pool = createTilePool();
@@ -352,10 +442,19 @@ export function generateScoreQuizProblem(
     const seatWinds: Wind[] = ["east", "south", "west", "north"];
     const roundWind = randomChoice(roundWinds);
     // 親の場合は東家固定
-    const seatWind = isDealer ? "east" : randomChoice(seatWinds.filter((w) => w !== "east"));
+    const seatWind = isDealer
+      ? "east"
+      : randomChoice(seatWinds.filter((w) => w !== "east"));
 
     // 役満チェック（除外）
-    if (isYakuman(waitConfig.modifiedMelds, waitConfig.modifiedHead, winType, isMenzen)) {
+    if (
+      isYakuman(
+        waitConfig.modifiedMelds,
+        waitConfig.modifiedHead,
+        winType,
+        isMenzen,
+      )
+    ) {
       continue;
     }
 
@@ -392,7 +491,8 @@ export function generateScoreQuizProblem(
     let correctScoreDealer: number | undefined;
 
     if (isDealer) {
-      correctScore = winType === "tsumo" ? scoreEntry.dealer.tsumo : scoreEntry.dealer.ron;
+      correctScore =
+        winType === "tsumo" ? scoreEntry.dealer.tsumo : scoreEntry.dealer.ron;
     } else {
       if (winType === "tsumo") {
         correctScore = scoreEntry.nonDealer.tsumoNonDealer;
@@ -464,7 +564,10 @@ function generateTsumoOptions(
     const uniqueScores = [...new Set(allScores)].sort((a, b) => a - b);
     const sorted = uniqueScores
       .filter((s) => s !== correctNonDealer)
-      .sort((a, b) => Math.abs(a - correctNonDealer) - Math.abs(b - correctNonDealer));
+      .sort(
+        (a, b) =>
+          Math.abs(a - correctNonDealer) - Math.abs(b - correctNonDealer),
+      );
     const options: TsumoOption[] = [
       { nonDealer: correctNonDealer },
       ...sorted.slice(0, 3).map((s) => ({ nonDealer: s })),
@@ -485,9 +588,13 @@ function generateTsumoOptions(
       }
     }
     const correctKey = `${correctNonDealer}-${correctDealer}`;
-    const filtered = uniquePairs.filter((p) => `${p.nonDealer}-${p.dealer}` !== correctKey);
+    const filtered = uniquePairs.filter(
+      (p) => `${p.nonDealer}-${p.dealer}` !== correctKey,
+    );
     const sorted = filtered.sort(
-      (a, b) => Math.abs(a.nonDealer - correctNonDealer) - Math.abs(b.nonDealer - correctNonDealer),
+      (a, b) =>
+        Math.abs(a.nonDealer - correctNonDealer) -
+        Math.abs(b.nonDealer - correctNonDealer),
     );
     const options: TsumoOption[] = [
       { nonDealer: correctNonDealer, dealer: correctDealer },
@@ -498,9 +605,10 @@ function generateTsumoOptions(
 }
 
 // 統一された選択肢生成関数
-export function generateScoreOptions(
-  problem: ScoreQuizProblem,
-): { ronOptions?: number[]; tsumoOptions?: TsumoOption[] } {
+export function generateScoreOptions(problem: ScoreQuizProblem): {
+  ronOptions?: number[];
+  tsumoOptions?: TsumoOption[];
+} {
   if (problem.winType === "ron") {
     return {
       ronOptions: generateRonOptions(problem.correctScore, problem.isDealer),

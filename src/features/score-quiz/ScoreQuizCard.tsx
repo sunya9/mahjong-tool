@@ -152,12 +152,8 @@ export function ScoreQuizCard({ category, onResult }: ScoreQuizCardProps) {
               <MahjongTerm term="ロン">ロン</MahjongTerm>
             )}
           </Badge>
-          <Badge variant="outline">
-            {getWindName(problem.roundWind)}場
-          </Badge>
-          <Badge variant="outline">
-            {getWindName(problem.seatWind)}家
-          </Badge>
+          <Badge variant="outline">{getWindName(problem.roundWind)}場</Badge>
+          <Badge variant="outline">{getWindName(problem.seatWind)}家</Badge>
         </div>
 
         {/* 回答選択肢 */}
