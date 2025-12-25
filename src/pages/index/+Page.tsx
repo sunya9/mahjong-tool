@@ -116,6 +116,7 @@ export default function Page() {
               <Button
                 render={<a href="https://github.com/sunya9/mahjong-tool" />}
                 variant="link"
+                nativeButton={false}
               >
                 GitHub
               </Button>
