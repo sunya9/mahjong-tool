@@ -25,7 +25,7 @@ export default defineConfig({
         theme_color: "#f7f5f0",
         background_color: "#f7f5f0",
         display: "standalone",
-        start_url: "/",
+        start_url: "/mahjong-tool/",
         icons: [
           { src: "pwa-64x64.png", sizes: "64x64", type: "image/png" },
           { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },
@@ -48,5 +48,5 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  base: "/mahjong-tool/",
+  base: "/mahjong-tool",
 });

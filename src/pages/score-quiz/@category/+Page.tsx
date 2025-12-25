@@ -29,6 +29,7 @@ import {
   deserializeScoreQuizProblem,
 } from "@/lib/problem-serializer";
 import type { ScoreQuizCategory, ScoreQuizProblem } from "@/lib/mahjong-types";
+import { createUrl } from "@/lib/utils";
 
 type Category = ScoreQuizCategory;
 
@@ -168,8 +169,8 @@ export default function Page() {
     <>
       <PageHeader
         breadcrumbs={[
-          { label: "麻雀ツール", href: "/" },
-          { label: "点数クイズ", href: "/score-quiz" },
+          { label: "麻雀ツール", href: createUrl("/") },
+          { label: "点数クイズ", href: createUrl("/score-quiz") },
           { label: categoryLabel },
         ]}
       >

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Switch } from "@/components/ui/switch";
 import { useReading } from "@/context/useReading";
+import { createUrl } from "@/lib/utils";
 
 const quizItems = [
   {
@@ -50,7 +51,8 @@ const otherItems = [
 ];
 
 export function AppSidebar() {
-  const { urlPathname: location } = usePageContext();
+  const { urlPathname } = usePageContext();
+  const location = createUrl(urlPathname);
   const { showReading, setShowReading } = useReading();
 
   return (
@@ -59,9 +61,9 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              render={<a href="/" />}
+              render={<a href={createUrl("/")} />}
               size="lg"
-              isActive={location === "/"}
+              isActive={location === createUrl("/")}
             >
               <Home />
               <span className="font-bold">麻雀ツール</span>
@@ -77,8 +79,8 @@ export function AppSidebar() {
               {quizItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    render={<a href={item.url} />}
-                    isActive={location.startsWith(item.url)}
+                    render={<a href={createUrl(item.url)} />}
+                    isActive={location.startsWith(createUrl(item.url))}
                   >
                     <item.icon />
                     <span>{item.title}</span>
@@ -95,8 +97,8 @@ export function AppSidebar() {
               {cheatsheetItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    render={<a href={item.url} />}
-                    isActive={location === item.url}
+                    render={<a href={createUrl(item.url)} />}
+                    isActive={location === createUrl(item.url)}
                   >
                     <item.icon />
                     <span>{item.title}</span>
@@ -113,8 +115,8 @@ export function AppSidebar() {
               {otherItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    render={<a href={item.url} />}
-                    isActive={location === item.url}
+                    render={<a href={createUrl(item.url)} />}
+                    isActive={location === createUrl(item.url)}
                   >
                     <item.icon />
                     <span>{item.title}</span>

@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { Fragment } from "react/jsx-runtime";
+import { createUrl } from "@/lib/utils";
 
 export interface BreadcrumbEntry {
   label: string;
@@ -37,7 +38,7 @@ export function PageHeader({ breadcrumbs, children }: PageHeaderProps) {
               variant="ghost"
               size="icon"
               className="size-8"
-              render={<a href={parentBreadcrumb.href ?? "/"} />}
+              render={<a href={parentBreadcrumb.href ?? createUrl("/")} />}
               nativeButton={false}
             >
               <ChevronLeft />

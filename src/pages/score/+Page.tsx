@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ScoreTable } from "@/features/score-cheatsheet/ScoreTable";
 import { Minus, Plus } from "lucide-react";
+import { createUrl } from "@/lib/utils";
 
 export default function Page() {
   const [isDealer, setIsDealer] = useState(false);
@@ -14,7 +15,10 @@ export default function Page() {
   return (
     <>
       <PageHeader
-        breadcrumbs={[{ label: "麻雀ツール", href: "/" }, { label: "点数表" }]}
+        breadcrumbs={[
+          { label: "麻雀ツール", href: createUrl("/") },
+          { label: "点数表" },
+        ]}
       >
         <div className="ml-auto flex items-center gap-4">
           {/* 親/子スイッチ */}

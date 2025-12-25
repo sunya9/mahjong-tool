@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MarkupText } from "@/components/mahjong/MarkupText";
 import { getGlossaryByCategory, categoryLabels } from "@/data/glossary";
 import { useReading } from "@/context/useReading";
+import { createUrl } from "@/lib/utils";
 
 export default function Page() {
   const { showReading } = useReading();
@@ -13,7 +14,10 @@ export default function Page() {
   return (
     <>
       <PageHeader
-        breadcrumbs={[{ label: "麻雀ツール", href: "/" }, { label: "用語集" }]}
+        breadcrumbs={[
+          { label: "麻雀ツール", href: createUrl("/") },
+          { label: "用語集" },
+        ]}
       />
       <Contents className="space-y-4">
         <p className="text-muted-foreground">

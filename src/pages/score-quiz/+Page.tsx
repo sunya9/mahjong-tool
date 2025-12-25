@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/item";
 import { ChevronRight } from "lucide-react";
 import type { ScoreQuizCategory } from "@/lib/mahjong-types";
+import { createUrl } from "@/lib/utils";
 
 type Category = ScoreQuizCategory;
 
@@ -25,7 +26,7 @@ export default function Page() {
     <>
       <PageHeader
         breadcrumbs={[
-          { label: "麻雀ツール", href: "/" },
+          { label: "麻雀ツール", href: createUrl("/") },
           { label: "点数クイズ" },
         ]}
       />

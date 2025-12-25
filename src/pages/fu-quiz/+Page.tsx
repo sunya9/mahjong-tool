@@ -25,6 +25,7 @@ import { AlertCircle, Info, Lightbulb, RefreshCw } from "lucide-react";
 import { generateProblemForCategory } from "@/lib/hand-generator";
 import { serializeProblem, deserializeProblem } from "@/lib/problem-serializer";
 import type { QuizProblem } from "@/lib/mahjong-types";
+import { createUrl } from "@/lib/utils";
 
 // 判別可能なユニオン型で状態を表現
 type QuizState =
@@ -143,7 +144,7 @@ export default function Page() {
     <>
       <PageHeader
         breadcrumbs={[
-          { label: "麻雀ツール", href: "/" },
+          { label: "麻雀ツール", href: createUrl("/") },
           { label: "符クイズ" },
         ]}
       >
