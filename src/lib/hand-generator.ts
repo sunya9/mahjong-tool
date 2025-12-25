@@ -1,232 +1,30 @@
 import type {
   Tile,
+  TileSuit,
   Meld,
   Head,
   WaitType,
   WinType,
   Wind,
   QuizProblem,
-  TileSuit,
-  HonorType,
+  RegularHand,
+  FuItem,
 } from "./mahjong-types";
+import { isNumberTile, isHonorTile } from "./mahjong-types";
 import { calculateFu } from "./fu-calculator";
-
-// 牌のプール管理
-interface TilePool {
-  tiles: Map<string, number>; // "man-1" -> 残り枚数
-}
-
-function tileKey(tile: Tile): string {
-  return `${tile.suit}-${tile.value}`;
-}
-
-function createTilePool(): TilePool {
-  const pool = new Map<string, number>();
-
-  // 数牌（各4枚）
-  const suits: TileSuit[] = ["man", "pin", "sou"];
-  for (const suit of suits) {
-    for (let i = 1; i <= 9; i++) {
-      pool.set(`${suit}-${i}`, 4);
-    }
-  }
-
-  // 字牌（各4枚）
-  const honors: HonorType[] = [
-    "east",
-    "south",
-    "west",
-    "north",
-    "white",
-    "green",
-    "red",
-  ];
-  for (const honor of honors) {
-    pool.set(`honor-${honor}`, 4);
-  }
-
-  return { tiles: pool };
-}
-
-function canTake(pool: TilePool, tile: Tile, count: number): boolean {
-  const key = tileKey(tile);
-  const available = pool.tiles.get(key) ?? 0;
-  return available >= count;
-}
-
-function takeTiles(pool: TilePool, tile: Tile, count: number): boolean {
-  const key = tileKey(tile);
-  const available = pool.tiles.get(key) ?? 0;
-  if (available < count) return false;
-  pool.tiles.set(key, available - count);
-  return true;
-}
-
-// ランダムユーティリティ
-function randomChoice<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  const result = [...arr];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
-
-// 順子を生成
-function generateShuntsu(
-  pool: TilePool,
-  isOpen: boolean,
-): { meld: Meld; tiles: Tile[] } | null {
-  const suits: TileSuit[] = shuffle(["man", "pin", "sou"]);
-  const startNumbers = shuffle([1, 2, 3, 4, 5, 6, 7]);
-
-  for (const suit of suits) {
-    for (const start of startNumbers) {
-      const tiles: Tile[] = [
-        { suit, value: start },
-        { suit, value: start + 1 },
-        { suit, value: start + 2 },
-      ];
-
-      if (tiles.every((t) => canTake(pool, t, 1))) {
-        tiles.forEach((t) => takeTiles(pool, t, 1));
-        return {
-          meld: { type: "shuntsu", tiles, state: isOpen ? "open" : "closed" },
-          tiles,
-        };
-      }
-    }
-  }
-  return null;
-}
-
-// 刻子を生成
-function generateKoutsu(
-  pool: TilePool,
-  isOpen: boolean,
-): { meld: Meld; tiles: Tile[] } | null {
-  const allTiles: Tile[] = [];
-
-  // 数牌
-  const suits: TileSuit[] = ["man", "pin", "sou"];
-  for (const suit of suits) {
-    for (let i = 1; i <= 9; i++) {
-      allTiles.push({ suit, value: i });
-    }
-  }
-
-  // 字牌
-  const honors: HonorType[] = [
-    "east",
-    "south",
-    "west",
-    "north",
-    "white",
-    "green",
-    "red",
-  ];
-  for (const honor of honors) {
-    allTiles.push({ suit: "honor", value: honor });
-  }
-
-  const shuffled = shuffle(allTiles);
-
-  for (const tile of shuffled) {
-    if (canTake(pool, tile, 3)) {
-      takeTiles(pool, tile, 3);
-      const tiles = [tile, tile, tile];
-      return {
-        meld: { type: "koutsu", tiles, state: isOpen ? "open" : "closed" },
-        tiles,
-      };
-    }
-  }
-  return null;
-}
-
-// 槓子を生成
-function generateKantsu(
-  pool: TilePool,
-  isOpen: boolean,
-): { meld: Meld; tiles: Tile[] } | null {
-  const allTiles: Tile[] = [];
-
-  const suits: TileSuit[] = ["man", "pin", "sou"];
-  for (const suit of suits) {
-    for (let i = 1; i <= 9; i++) {
-      allTiles.push({ suit, value: i });
-    }
-  }
-
-  const honors: HonorType[] = [
-    "east",
-    "south",
-    "west",
-    "north",
-    "white",
-    "green",
-    "red",
-  ];
-  for (const honor of honors) {
-    allTiles.push({ suit: "honor", value: honor });
-  }
-
-  const shuffled = shuffle(allTiles);
-
-  for (const tile of shuffled) {
-    if (canTake(pool, tile, 4)) {
-      takeTiles(pool, tile, 4);
-      const tiles = [tile, tile, tile, tile];
-      return {
-        meld: { type: "kantsu", tiles, state: isOpen ? "open" : "closed" },
-        tiles,
-      };
-    }
-  }
-  return null;
-}
-
-// 雀頭を生成
-function generateHead(pool: TilePool): { head: Head; tile: Tile } | null {
-  const allTiles: Tile[] = [];
-
-  const suits: TileSuit[] = ["man", "pin", "sou"];
-  for (const suit of suits) {
-    for (let i = 1; i <= 9; i++) {
-      allTiles.push({ suit, value: i });
-    }
-  }
-
-  const honors: HonorType[] = [
-    "east",
-    "south",
-    "west",
-    "north",
-    "white",
-    "green",
-    "red",
-  ];
-  for (const honor of honors) {
-    allTiles.push({ suit: "honor", value: honor });
-  }
-
-  const shuffled = shuffle(allTiles);
-
-  for (const tile of shuffled) {
-    if (canTake(pool, tile, 2)) {
-      takeTiles(pool, tile, 2);
-      return {
-        head: { tiles: [tile, tile] },
-        tile,
-      };
-    }
-  }
-  return null;
-}
+import { createTilePool, tilesMatch } from "./tile-utils";
+import {
+  setGlobalSeed,
+  randomChoice,
+  shuffle,
+  generateShuntsu,
+  generateKoutsu,
+  generateKantsu,
+  generateHead,
+  cloneMeld,
+} from "./problem-generator";
+import { parseHand } from "./hand-parser";
+import { determineWaitType } from "./yaku-resolver";
 
 // 待ちの種類を決定して手牌を調整
 interface WaitConfig {
@@ -236,11 +34,6 @@ interface WaitConfig {
   modifiedHead: Head;
   waitMeldIndex?: number; // 待ちの元になる面子のインデックス
   waitFromHead?: boolean; // 雀頭からの待ちか
-}
-
-// 牌が一致するかチェック
-function tilesMatch(a: Tile, b: Tile): boolean {
-  return a.suit === b.suit && a.value === b.value;
 }
 
 // 和了牌が副露した面子に含まれているかチェック
@@ -280,14 +73,19 @@ function isYakuman(
 
 // 役牌判定（雀頭用）
 function isYakuhaiTile(tile: Tile, roundWind: Wind, seatWind: Wind): boolean {
-  if (tile.suit !== "honor") return false;
-  const honor = tile.value as HonorType;
+  if (!isHonorTile(tile)) return false;
   // 三元牌
-  if (honor === "white" || honor === "green" || honor === "red") return true;
+  if (
+    tile.value === "white" ||
+    tile.value === "green" ||
+    tile.value === "red"
+  ) {
+    return true;
+  }
   // 場風
-  if (honor === roundWind) return true;
+  if (tile.value === roundWind) return true;
   // 自風
-  if (honor === seatWind) return true;
+  if (tile.value === seatWind) return true;
   return false;
 }
 
@@ -322,10 +120,7 @@ function hasYaku(
 
   // 断幺九（タンヤオ）: 全て中張牌（2-8）
   const isTanyao = allTiles.every(
-    (t) =>
-      t.suit !== "honor" &&
-      (t.value as number) >= 2 &&
-      (t.value as number) <= 8,
+    (t) => isNumberTile(t) && t.value >= 2 && t.value <= 8,
   );
   if (isTanyao) return true;
 
@@ -339,14 +134,19 @@ function hasYaku(
   const hasYakuhai = melds.some((meld) => {
     if (meld.type !== "koutsu" && meld.type !== "kantsu") return false;
     const tile = meld.tiles[0];
-    if (tile.suit !== "honor") return false;
-    const honor = tile.value as HonorType;
+    if (!isHonorTile(tile)) return false;
     // 三元牌
-    if (honor === "white" || honor === "green" || honor === "red") return true;
+    if (
+      tile.value === "white" ||
+      tile.value === "green" ||
+      tile.value === "red"
+    ) {
+      return true;
+    }
     // 場風
-    if (honor === roundWind) return true;
+    if (tile.value === roundWind) return true;
     // 自風
-    if (honor === seatWind) return true;
+    if (tile.value === seatWind) return true;
     return false;
   });
   if (hasYakuhai) return true;
@@ -377,6 +177,247 @@ function hasYaku(
   if (suits.size === 1 && hasHonor) return true;
 
   return false;
+}
+
+// ========================================
+// 高点法: 最も符が高い解釈を選択
+// ========================================
+
+interface HighestFuResult {
+  melds: Meld[];
+  head: Head;
+  waitType: WaitType;
+  fu: number;
+  fuBreakdown: FuItem[];
+  waitMeldIndex?: number;
+  waitFromHead?: boolean;
+}
+
+/**
+ * 高点法を適用して最も符が高い解釈を返す
+ * 複数の解釈が可能な場合、符が最も高いものを選択する
+ */
+function findHighestFuInterpretation(
+  originalMelds: Meld[],
+  originalHead: Head,
+  winTile: Tile,
+  winType: WinType,
+  roundWind: Wind,
+  seatWind: Wind,
+  isMenzen: boolean,
+  originalWaitMeldIndex?: number,
+  originalWaitFromHead?: boolean,
+): HighestFuResult | null {
+  // 副露している面子を特定
+  const openMelds = originalMelds.filter((m) => m.state === "open");
+  const closedMelds = originalMelds.filter((m) => m.state === "closed");
+
+  // 門前部分の全牌を抽出
+  const closedTiles: Tile[] = [];
+  for (const meld of closedMelds) {
+    closedTiles.push(...meld.tiles);
+  }
+  closedTiles.push(...originalHead.tiles);
+
+  // 手牌解析で全ての可能な解釈を取得
+  const parseResult = parseHand({
+    closedTiles,
+    openMelds,
+    winTile,
+  });
+
+  if (!parseResult.isWinning) {
+    // 解析に失敗した場合は元の解釈を使用
+    const originalWaitType = determineOriginalWaitType(
+      originalMelds,
+      originalHead,
+      winTile,
+      originalWaitMeldIndex,
+      originalWaitFromHead,
+    );
+    const fuResult = calculateFu({
+      melds: originalMelds,
+      head: originalHead,
+      waitType: originalWaitType,
+      winType,
+      roundWind,
+      seatWind,
+      isMenzen,
+    });
+    return {
+      melds: originalMelds,
+      head: originalHead,
+      waitType: originalWaitType,
+      fu: fuResult.total,
+      fuBreakdown: fuResult.breakdown,
+      waitMeldIndex: originalWaitMeldIndex,
+      waitFromHead: originalWaitFromHead,
+    };
+  }
+
+  let bestResult: HighestFuResult | null = null;
+
+  for (const hand of parseResult.hands) {
+    // 通常形のみ処理（七対子・国士は別処理）
+    if (hand.pattern !== "regular") continue;
+
+    const regularHand = hand as RegularHand;
+
+    // 待ちの種類を判定
+    const waitType = determineWaitType(regularHand, winTile);
+
+    // 副露状態を復元（parseHandは全てclosedとして返すため）
+    const restoredMelds = restoreOpenState(regularHand.melds, openMelds);
+
+    // シャンポン待ちでロンの場合、和了牌を含む面子は明刻になる
+    const adjustedMelds =
+      winType === "ron" && waitType === "shanpon"
+        ? adjustShanponForRon(restoredMelds, winTile)
+        : restoredMelds;
+
+    // 符を計算
+    const fuResult = calculateFu({
+      melds: adjustedMelds,
+      head: regularHand.head,
+      waitType,
+      winType,
+      roundWind,
+      seatWind,
+      isMenzen,
+    });
+
+    // 待ちのインデックスを計算
+    const { waitMeldIndex, waitFromHead } = findWaitPosition(
+      adjustedMelds,
+      regularHand.head,
+      winTile,
+      waitType,
+    );
+
+    // より高い符の解釈を選択
+    if (!bestResult || fuResult.total > bestResult.fu) {
+      bestResult = {
+        melds: adjustedMelds,
+        head: regularHand.head,
+        waitType,
+        fu: fuResult.total,
+        fuBreakdown: fuResult.breakdown,
+        waitMeldIndex,
+        waitFromHead,
+      };
+    }
+  }
+
+  return bestResult;
+}
+
+/**
+ * 元の手牌構成から待ちの種類を判定
+ */
+function determineOriginalWaitType(
+  melds: Meld[],
+  _head: Head,
+  winTile: Tile,
+  waitMeldIndex?: number,
+  waitFromHead?: boolean,
+): WaitType {
+  // 雀頭からの待ち（単騎）
+  if (waitFromHead) {
+    return "tanki";
+  }
+
+  if (waitMeldIndex !== undefined) {
+    const meld = melds[waitMeldIndex];
+    if (meld.type === "koutsu") {
+      return "shanpon";
+    }
+    if (meld.type === "shuntsu") {
+      // 順子での待ちを判定
+      const values = meld.tiles
+        .filter((t) => isNumberTile(t))
+        .map((t) => (t as { value: number }).value)
+        .sort((a, b) => a - b);
+
+      if (!isNumberTile(winTile)) return "ryanmen";
+      const winValue = winTile.value;
+
+      // 嵌張
+      if (winValue === values[1]) return "kanchan";
+
+      // 辺張
+      if (values[0] === 1 && winValue === 3) return "penchan";
+      if (values[0] === 7 && winValue === 7) return "penchan";
+
+      // 両面
+      return "ryanmen";
+    }
+  }
+
+  return "ryanmen";
+}
+
+/**
+ * 副露状態を復元する
+ */
+function restoreOpenState(parsedMelds: Meld[], openMelds: Meld[]): Meld[] {
+  return parsedMelds.map((meld) => {
+    // 副露した面子と一致するか確認
+    const matchingOpen = openMelds.find((open) => {
+      if (open.type !== meld.type) return false;
+      // 先頭牌が同じかチェック
+      return tilesMatch(open.tiles[0], meld.tiles[0]);
+    });
+    if (matchingOpen) {
+      return { ...meld, state: "open" as const };
+    }
+    return meld;
+  });
+}
+
+/**
+ * シャンポン待ちでロンの場合、和了牌を含む刻子を明刻に変更
+ */
+function adjustShanponForRon(melds: Meld[], winTile: Tile): Meld[] {
+  return melds.map((meld) => {
+    if (meld.type === "koutsu" && tilesMatch(meld.tiles[0], winTile)) {
+      return { ...meld, state: "open" as const };
+    }
+    return meld;
+  });
+}
+
+/**
+ * 待ちの位置を特定
+ */
+function findWaitPosition(
+  melds: Meld[],
+  head: Head,
+  winTile: Tile,
+  waitType: WaitType,
+): { waitMeldIndex?: number; waitFromHead?: boolean } {
+  // 単騎待ち
+  if (waitType === "tanki") {
+    if (tilesMatch(head.tiles[0], winTile)) {
+      return { waitFromHead: true };
+    }
+  }
+
+  // 面子からの待ち
+  for (let i = 0; i < melds.length; i++) {
+    const meld = melds[i];
+    if (tilesMatch(meld.tiles[0], winTile)) {
+      return { waitMeldIndex: i };
+    }
+    // 順子の場合、和了牌が含まれているかチェック
+    if (meld.type === "shuntsu") {
+      const hasTile = meld.tiles.some((t) => tilesMatch(t, winTile));
+      if (hasTile) {
+        return { waitMeldIndex: i };
+      }
+    }
+  }
+
+  return {};
 }
 
 function configureWait(
@@ -415,7 +456,7 @@ function tryConfigureWait(
   waitType: WaitType,
   winType: WinType,
 ): WaitConfig | null {
-  const modifiedMelds = melds.map((m) => ({ ...m, tiles: [...m.tiles] }));
+  const modifiedMelds = melds.map(cloneMeld);
   const modifiedHead: Head = { tiles: [...head.tiles] };
 
   switch (waitType) {
@@ -431,8 +472,9 @@ function tryConfigureWait(
       // 7始まり(789): 9で和了は両面だが、7で和了は辺張
       // → 両端どちらでも両面になるのは2〜6始まりのみ
       const validIndices = shuntsuIndices.filter((idx) => {
-        const firstValue = modifiedMelds[idx].tiles[0].value as number;
-        return firstValue >= 2 && firstValue <= 6;
+        const firstTile = modifiedMelds[idx].tiles[0];
+        if (!isNumberTile(firstTile)) return false;
+        return firstTile.value >= 2 && firstTile.value <= 6;
       });
 
       if (validIndices.length === 0) return null;
@@ -490,8 +532,9 @@ function tryConfigureWait(
 
       for (const idx of shuffle(shuntsuIndices)) {
         const meld = modifiedMelds[idx];
-        const firstValue = meld.tiles[0].value as number;
-        if (firstValue === 1) {
+        const firstTile = meld.tiles[0];
+        if (!isNumberTile(firstTile)) continue;
+        if (firstTile.value === 1) {
           // 123 -> 3待ち (辺張)
           return {
             waitType,
@@ -500,7 +543,7 @@ function tryConfigureWait(
             modifiedHead,
             waitMeldIndex: idx,
           };
-        } else if (firstValue === 7) {
+        } else if (firstTile.value === 7) {
           // 789 -> 7待ち (辺張)
           return {
             waitType,
@@ -565,7 +608,6 @@ export function generateRandomProblem(category?: string): QuizProblem | null {
     // 面子を4つ生成
     let meldCount = 0;
     const targetMelds = 4;
-    let hasKantsu = false;
     let hasActualOpen = false;
 
     // 副露ありの場合、どの面子を鳴くか決める（1〜2個）
@@ -582,10 +624,9 @@ export function generateRandomProblem(category?: string): QuizProblem | null {
       let result: { meld: Meld; tiles: Tile[] } | null = null;
       const shouldBeOpen = openMeldIndices.has(meldCount);
 
-      // 槓子は1つまで、確率低め
-      if (meldType < 0.1 && !hasKantsu) {
+      // 槓子（確率低め）
+      if (meldType < 0.1) {
         result = generateKantsu(pool, shouldBeOpen);
-        if (result) hasKantsu = true;
       } else if (meldType < 0.4) {
         result = generateKoutsu(pool, shouldBeOpen);
       } else {
@@ -644,16 +685,20 @@ export function generateRandomProblem(category?: string): QuizProblem | null {
       continue;
     }
 
-    // 符を計算
-    const fuResult = calculateFu({
-      melds: waitConfig.modifiedMelds,
-      head: waitConfig.modifiedHead,
-      waitType: waitConfig.waitType,
+    // 高点法を適用して最も符が高い解釈を選択
+    const highestFu = findHighestFuInterpretation(
+      waitConfig.modifiedMelds,
+      waitConfig.modifiedHead,
+      waitConfig.winTile,
       winType,
       roundWind,
       seatWind,
       isMenzen,
-    });
+      waitConfig.waitMeldIndex,
+      waitConfig.waitFromHead,
+    );
+
+    if (!highestFu) continue;
 
     // カテゴリを決定
     let problemCategory: "wait" | "meld" | "head" | "mixed";
@@ -662,12 +707,12 @@ export function generateRandomProblem(category?: string): QuizProblem | null {
     } else {
       // 符の構成からカテゴリを推定
       const hasWaitFu = ["kanchan", "penchan", "tanki"].includes(
-        waitConfig.waitType,
+        highestFu.waitType,
       );
-      const hasMeldFu = waitConfig.modifiedMelds.some(
+      const hasMeldFu = highestFu.melds.some(
         (m) => m.type === "koutsu" || m.type === "kantsu",
       );
-      const hasHeadFu = fuResult.breakdown.some((b) => b.name === "雀頭");
+      const hasHeadFu = highestFu.fuBreakdown.some((b) => b.name === "雀頭");
 
       if (hasWaitFu && hasMeldFu && hasHeadFu) {
         problemCategory = "mixed";
@@ -684,19 +729,19 @@ export function generateRandomProblem(category?: string): QuizProblem | null {
 
     return {
       id: `random-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      melds: waitConfig.modifiedMelds,
-      head: waitConfig.modifiedHead,
+      melds: highestFu.melds,
+      head: highestFu.head,
       winTile: waitConfig.winTile,
-      waitType: waitConfig.waitType,
+      waitType: highestFu.waitType,
       winType,
       roundWind,
       seatWind,
       isMenzen,
-      correctFu: fuResult.total,
-      fuBreakdown: fuResult.breakdown,
+      correctFu: highestFu.fu,
+      fuBreakdown: highestFu.fuBreakdown,
       category: problemCategory,
-      waitMeldIndex: waitConfig.waitMeldIndex,
-      waitFromHead: waitConfig.waitFromHead,
+      waitMeldIndex: highestFu.waitMeldIndex,
+      waitFromHead: highestFu.waitFromHead,
     };
   }
 
@@ -720,4 +765,18 @@ export function generateProblemForCategory(
   }
 
   return null;
+}
+
+// シード付きで問題生成（同じシードなら同じ問題が生成される）
+export function generateProblemWithSeed(
+  seed: number,
+  category: "wait" | "meld" | "head" | "mixed" | "all" = "mixed",
+): QuizProblem | null {
+  setGlobalSeed(seed);
+  return generateProblemForCategory(category);
+}
+
+// 新しいシードを生成
+export function generateSeed(): number {
+  return Math.floor(Math.random() * 0x7fffffff);
 }

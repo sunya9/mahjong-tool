@@ -1,13 +1,25 @@
-import type {
-  Meld,
-  Head,
-  WaitType,
-  WinType,
-  Wind,
-  Tile,
-  TileSuit,
-  HonorType,
+import {
+  type Meld,
+  type Head,
+  type WaitType,
+  type WinType,
+  type Wind,
+  type Tile,
+  type TileSuit,
+  type HonorType,
+  type SpecialConditions,
+  type ChiitoitsuHand,
+  type KokushiHand,
+  type TileNumber,
+  type DragonType,
+  type WindType,
+  isWindTile,
+  isTerminalOrHonor,
+  isTerminal,
+  isSimple,
+  isDragonTile,
 } from "./mahjong-types";
+import { tilesMatch } from "./tile-utils";
 
 // 役の情報
 export interface YakuInfo {
@@ -31,32 +43,13 @@ function getAllTiles(melds: Meld[], head: Head): Tile[] {
   return tiles;
 }
 
-// 幺九牌（1,9,字牌）かどうか
-function isTerminalOrHonor(tile: Tile): boolean {
-  if (tile.suit === "honor") return true;
-  return tile.value === 1 || tile.value === 9;
-}
-
-// 老頭牌（1,9のみ）かどうか
-function isTerminal(tile: Tile): boolean {
-  if (tile.suit === "honor") return false;
-  return tile.value === 1 || tile.value === 9;
-}
-
-// 中張牌（2-8）かどうか
-function isSimple(tile: Tile): boolean {
-  if (tile.suit === "honor") return false;
-  const v = tile.value as number;
-  return v >= 2 && v <= 8;
-}
-
 // 緑一色に使える牌かどうか
 function isGreenTile(tile: Tile): boolean {
   if (tile.suit === "honor") {
     return tile.value === "green"; // 發
   }
   if (tile.suit === "sou") {
-    const v = tile.value as number;
+    const v = tile.value;
     return v === 2 || v === 3 || v === 4 || v === 6 || v === 8;
   }
   return false;
@@ -74,12 +67,7 @@ function countKantsu(melds: Meld[]): number {
   return melds.filter((m) => m.type === "kantsu").length;
 }
 
-// 役牌（三元牌）かどうか
-function isDragon(tile: Tile): boolean {
-  if (tile.suit !== "honor") return false;
-  const v = tile.value as HonorType;
-  return v === "white" || v === "green" || v === "red";
-}
+// 役牌（三元牌）かどうか - isDragonTile を使用
 
 // 役牌（風牌で場風または自風）かどうか
 function isWindYaku(tile: Tile, roundWind: Wind, seatWind: Wind): boolean {
@@ -122,7 +110,7 @@ export function calculateYaku(
     isMenzen &&
     melds.every((m) => m.type === "shuntsu") &&
     !isWindYaku(head.tiles[0], roundWind, seatWind) &&
-    !isDragon(head.tiles[0]) &&
+    !isDragonTile(head.tiles[0]) &&
     waitType === "ryanmen";
   if (isPinfu) {
     yaku.push({ name: "平和", han: 1 });
@@ -214,9 +202,10 @@ export function calculateYaku(
 
   // 小三元
   const dragonTriplets = melds.filter(
-    (m) => (m.type === "koutsu" || m.type === "kantsu") && isDragon(m.tiles[0]),
+    (m) =>
+      (m.type === "koutsu" || m.type === "kantsu") && isDragonTile(m.tiles[0]),
   );
-  const isDragonHead = isDragon(head.tiles[0]);
+  const isDragonHead = isDragonTile(head.tiles[0]);
   if (dragonTriplets.length === 2 && isDragonHead) {
     yaku.push({ name: "小三元", han: 2, hanOpen: 2 });
   }
@@ -264,8 +253,8 @@ export function calculateYaku(
   for (const meld of melds) {
     if (meld.type === "shuntsu") {
       const suit = meld.tiles[0].suit;
-      const start = meld.tiles[0].value as number;
       if (!shuntsuBySuit[suit]) shuntsuBySuit[suit] = [];
+      const start = meld.tiles[0].value as number;
       shuntsuBySuit[suit].push(start);
     }
   }
@@ -357,7 +346,8 @@ export function isYakuman(
 
   // 大三元
   const dragonTriplets = melds.filter(
-    (m) => (m.type === "koutsu" || m.type === "kantsu") && isDragon(m.tiles[0]),
+    (m) =>
+      (m.type === "koutsu" || m.type === "kantsu") && isDragonTile(m.tiles[0]),
   );
   if (dragonTriplets.length === 3) return true;
 
@@ -378,4 +368,485 @@ export function isYakuman(
   if (kantsuCount === 4) return true;
 
   return false;
+}
+
+// ========================================
+// 特殊条件による役
+// ========================================
+
+/**
+ * 特殊条件から成立する役を取得
+ */
+export function getSpecialConditionYaku(
+  conditions: SpecialConditions | undefined,
+  winType: WinType,
+): YakuInfo[] {
+  if (!conditions) return [];
+
+  const yaku: YakuInfo[] = [];
+
+  // 天和（役満）
+  if (conditions.isTenhou) {
+    yaku.push({ name: "天和", han: 13 });
+    return yaku; // 役満なので他の役は加算しない
+  }
+
+  // 地和（役満）
+  if (conditions.isChiihou) {
+    yaku.push({ name: "地和", han: 13 });
+    return yaku;
+  }
+
+  // ダブル立直（2翻）- 立直より優先
+  if (conditions.isDoubleRiichi) {
+    yaku.push({ name: "ダブル立直", han: 2 });
+  } else if (conditions.isRiichi) {
+    // 立直（1翻）
+    yaku.push({ name: "立直", han: 1 });
+  }
+
+  // 一発（1翻）
+  if (conditions.isIppatsu) {
+    yaku.push({ name: "一発", han: 1 });
+  }
+
+  // 嶺上開花（1翻）
+  if (conditions.isRinshan && winType === "tsumo") {
+    yaku.push({ name: "嶺上開花", han: 1 });
+  }
+
+  // 槍槓（1翻）
+  if (conditions.isChankan && winType === "ron") {
+    yaku.push({ name: "槍槓", han: 1 });
+  }
+
+  // 海底摸月（1翻）
+  if (conditions.isHaitei && winType === "tsumo") {
+    yaku.push({ name: "海底摸月", han: 1 });
+  }
+
+  // 河底撈魚（1翻）
+  if (conditions.isHoutei && winType === "ron") {
+    yaku.push({ name: "河底撈魚", han: 1 });
+  }
+
+  return yaku;
+}
+
+// ========================================
+// 七対子の役判定
+// ========================================
+
+/**
+ * 七対子形の役を計算
+ * @param originalTiles ドラ計算用の元の手牌（isRedDoraプロパティを保持）
+ */
+export function calculateChiitoitsuYaku(
+  hand: ChiitoitsuHand,
+  winType: WinType,
+  _roundWind: Wind,
+  _seatWind: Wind,
+  conditions?: SpecialConditions,
+  originalTiles?: Tile[],
+): YakuResult {
+  const yaku: YakuInfo[] = [];
+
+  // 全ての牌を取得
+  const allTiles = hand.pairs.flatMap((p) => p);
+
+  // 特殊条件による役満チェック
+  const specialYaku = getSpecialConditionYaku(conditions, winType);
+  if (specialYaku.some((y) => y.han >= 13)) {
+    // 役満がある場合はそれだけ返す
+    return {
+      yaku: specialYaku,
+      totalHan: specialYaku.reduce((sum, y) => sum + y.han, 0),
+    };
+  }
+
+  // 字一色（役満）
+  if (allTiles.every((t) => t.suit === "honor")) {
+    return { yaku: [{ name: "字一色", han: 13 }], totalHan: 13 };
+  }
+
+  // 七対子（2翻）
+  yaku.push({ name: "七対子", han: 2 });
+
+  // 門前清自摸和（メンゼンツモ）
+  if (winType === "tsumo") {
+    yaku.push({ name: "門前清自摸和", han: 1 });
+  }
+
+  // 断幺九（タンヤオ）
+  if (allTiles.every((t) => isSimple(t))) {
+    yaku.push({ name: "断幺九", han: 1 });
+  }
+
+  // 混一色 / 清一色
+  const suits = new Set<TileSuit>();
+  let hasHonor = false;
+  for (const tile of allTiles) {
+    if (tile.suit === "honor") {
+      hasHonor = true;
+    } else {
+      suits.add(tile.suit);
+    }
+  }
+  if (suits.size === 1) {
+    if (hasHonor) {
+      yaku.push({ name: "混一色", han: 3 });
+    } else {
+      yaku.push({ name: "清一色", han: 6 });
+    }
+  }
+
+  // 混老頭（ホンロウトウ）
+  if (allTiles.every((t) => isTerminalOrHonor(t))) {
+    yaku.push({ name: "混老頭", han: 2 });
+  }
+
+  // 特殊条件による役を追加
+  yaku.push(...specialYaku);
+
+  // ドラを追加（originalTilesがあればそれを使用）
+  const tilesForDora = originalTiles ?? allTiles;
+  const isRiichi = conditions?.isRiichi || conditions?.isDoubleRiichi || false;
+  const doraYaku = getDoraYaku(tilesForDora, conditions, isRiichi);
+  yaku.push(...doraYaku);
+
+  // 翻数計算
+  const totalHan = yaku.reduce((sum, y) => sum + y.han, 0);
+
+  return { yaku, totalHan };
+}
+
+// ========================================
+// 国士無双の役判定
+// ========================================
+
+/**
+ * 国士無双形の役を計算
+ * 日本プロ麻雀連盟ルール：国士無双十三面もダブル役満ではなく役満
+ */
+export function calculateKokushiYaku(
+  _hand: KokushiHand,
+  winType: WinType,
+  conditions?: SpecialConditions,
+): YakuResult {
+  // 特殊条件による役満チェック
+  const specialYaku = getSpecialConditionYaku(conditions, winType);
+
+  // 国士無双（十三面待ちも同じ役満扱い）
+  const yaku: YakuInfo[] = [{ name: "国士無双", han: 13 }];
+  // 天和・地和との複合
+  yaku.push(...specialYaku.filter((y) => y.han >= 13));
+  const totalHan = yaku.reduce((sum, y) => sum + y.han, 0);
+  return { yaku, totalHan };
+}
+
+// ========================================
+// 通常形の役満判定
+// ========================================
+
+/**
+ * 通常形の役満を計算（役満がある場合のみ結果を返す）
+ */
+export function calculateRegularYakuman(
+  melds: Meld[],
+  head: Head,
+  isMenzen: boolean,
+  conditions?: SpecialConditions,
+): YakuResult | null {
+  const yaku: YakuInfo[] = [];
+  const allTiles = getAllTiles(melds, head);
+
+  // 天和・地和
+  if (conditions?.isTenhou) {
+    yaku.push({ name: "天和", han: 13 });
+  }
+  if (conditions?.isChiihou) {
+    yaku.push({ name: "地和", han: 13 });
+  }
+
+  // 四暗刻
+  // 日本プロ麻雀連盟ルール：四暗刻単騎もダブル役満ではなく役満
+  if (isMenzen) {
+    const closedTriplets = countClosedTriplets(melds);
+    if (closedTriplets === 4) {
+      yaku.push({ name: "四暗刻", han: 13 });
+    }
+  }
+
+  // 大三元
+  const dragonTriplets = melds.filter(
+    (m) =>
+      (m.type === "koutsu" || m.type === "kantsu") && isDragonTile(m.tiles[0]),
+  );
+  if (dragonTriplets.length === 3) {
+    yaku.push({ name: "大三元", han: 13 });
+  }
+
+  // 小四喜 / 大四喜
+  // 日本プロ麻雀連盟ルール：大四喜もダブル役満ではなく役満
+  const windTriplets = melds.filter(
+    (m) =>
+      (m.type === "koutsu" || m.type === "kantsu") && isWindTile(m.tiles[0]),
+  );
+  const isWindHead = isWindTile(head.tiles[0]);
+  if (windTriplets.length === 4) {
+    yaku.push({ name: "大四喜", han: 13 });
+  } else if (windTriplets.length === 3 && isWindHead) {
+    yaku.push({ name: "小四喜", han: 13 });
+  }
+
+  // 字一色
+  if (allTiles.every((t) => t.suit === "honor")) {
+    yaku.push({ name: "字一色", han: 13 });
+  }
+
+  // 清老頭
+  if (allTiles.every((t) => isTerminal(t))) {
+    yaku.push({ name: "清老頭", han: 13 });
+  }
+
+  // 緑一色
+  if (allTiles.every((t) => isGreenTile(t))) {
+    yaku.push({ name: "緑一色", han: 13 });
+  }
+
+  // 四槓子
+  const kantsuCount = countKantsu(melds);
+  if (kantsuCount === 4) {
+    yaku.push({ name: "四槓子", han: 13 });
+  }
+
+  // 九蓮宝燈 / 純正九蓮宝燈
+  if (isMenzen) {
+    const chuuren = checkChuuren(melds, head, allTiles);
+    if (chuuren) {
+      yaku.push(chuuren);
+    }
+  }
+
+  if (yaku.length === 0) return null;
+
+  const totalHan = yaku.reduce((sum, y) => sum + y.han, 0);
+  return { yaku, totalHan };
+}
+
+/**
+ * 九蓮宝燈の判定
+ */
+function checkChuuren(
+  _melds: Meld[],
+  _head: Head,
+  allTiles: Tile[],
+): YakuInfo | null {
+  // 清一色でない場合は不成立
+  const suits = new Set(allTiles.map((t) => t.suit));
+  if (suits.size !== 1 || suits.has("honor")) return null;
+
+  // 1112345678999 + 1枚の形
+  const count = new Array(9).fill(0);
+  for (const tile of allTiles) {
+    if (tile.suit !== "honor") {
+      count[(tile.value as number) - 1]++;
+    }
+  }
+
+  // 1と9が3枚以上、2-8が1枚以上
+  if (count[0] < 3 || count[8] < 3) return null;
+  for (let i = 1; i <= 7; i++) {
+    if (count[i] < 1) return null;
+  }
+
+  // 日本プロ麻雀連盟ルール：純正九蓮宝燈もダブル役満ではなく役満
+  return { name: "九蓮宝燈", han: 13 };
+}
+
+// ========================================
+// 拡張版の役計算（特殊条件対応）
+// ========================================
+
+/**
+ * 通常形の役を計算（特殊条件対応版）
+ * @param originalTiles ドラ計算用の元の手牌（isRedDoraプロパティを保持）
+ */
+export function calculateYakuWithConditions(
+  melds: Meld[],
+  head: Head,
+  waitType: WaitType,
+  winType: WinType,
+  roundWind: Wind,
+  seatWind: Wind,
+  isMenzen: boolean,
+  conditions?: SpecialConditions,
+  originalTiles?: Tile[],
+): YakuResult {
+  // 役満チェック
+  const yakumanResult = calculateRegularYakuman(
+    melds,
+    head,
+    isMenzen,
+    conditions,
+  );
+  if (yakumanResult) {
+    // 役満の場合はドラをカウントしない
+    return yakumanResult;
+  }
+
+  // 通常役
+  const baseResult = calculateYaku(
+    melds,
+    head,
+    waitType,
+    winType,
+    roundWind,
+    seatWind,
+    isMenzen,
+  );
+
+  // 特殊条件による役を追加
+  const specialYaku = getSpecialConditionYaku(conditions, winType);
+
+  // ドラを追加（originalTilesがあればそれを使用、なければ面子から再構成）
+  const tilesForDora = originalTiles ?? getAllTiles(melds, head);
+  const isRiichi = conditions?.isRiichi || conditions?.isDoubleRiichi || false;
+  const doraYaku = getDoraYaku(tilesForDora, conditions, isRiichi);
+
+  const allYaku = [...baseResult.yaku, ...specialYaku, ...doraYaku];
+  const totalHan = allYaku.reduce((sum, y) => {
+    if (isMenzen) {
+      return sum + y.han;
+    } else {
+      return sum + (y.hanOpen ?? y.han);
+    }
+  }, 0);
+
+  return { yaku: allYaku, totalHan };
+}
+
+const nextNumberOrder: Record<TileNumber, TileNumber> = {
+  1: 2,
+  2: 3,
+  3: 4,
+  4: 5,
+  5: 6,
+  6: 7,
+  7: 8,
+  8: 9,
+  9: 1,
+} as const;
+const nextWindOrder: Record<WindType, WindType> = {
+  east: "south",
+  south: "west",
+  west: "north",
+  north: "east",
+} as const;
+const nextDragonOrder: Record<DragonType, DragonType> = {
+  white: "green",
+  green: "red",
+  red: "white",
+} as const;
+
+// ========================================
+// ドラ計算
+// ========================================
+
+/**
+ * ドラ表示牌からドラ牌を取得
+ *
+ * ルール:
+ * - 数牌: 表示牌の次の牌（9の次は1）
+ * - 風牌: 東→南→西→北→東
+ * - 三元牌: 白→發→中→白
+ */
+export function getDoraFromIndicator(indicator: Tile): Tile {
+  if (indicator.suit === "honor") {
+    if (
+      indicator.value === "east" ||
+      indicator.value === "south" ||
+      indicator.value === "west" ||
+      indicator.value === "north"
+    ) {
+      const nextWind = nextWindOrder[indicator.value];
+      return { suit: "honor", value: nextWind };
+    } else {
+      const nextDragon = nextDragonOrder[indicator.value];
+      return { suit: "honor", value: nextDragon };
+    }
+  }
+  const nextValue = nextNumberOrder[indicator.value];
+  return { suit: indicator.suit, value: nextValue };
+}
+
+/**
+ * 牌が一致するかどうか（赤ドラ情報を無視して比較）
+ */
+// tilesMatch は tile-utils.ts からインポート
+
+/**
+ * 手牌のドラ枚数をカウント（表ドラ・裏ドラ用、赤ドラは含まない）
+ */
+export function countDora(allTiles: Tile[], doraIndicators: Tile[]): number {
+  let count = 0;
+  const doraTiles = doraIndicators.map(getDoraFromIndicator);
+
+  for (const tile of allTiles) {
+    for (const dora of doraTiles) {
+      if (tilesMatch(tile, dora)) {
+        count++;
+      }
+    }
+  }
+
+  return count;
+}
+
+/**
+ * 赤ドラの枚数をカウント
+ */
+export function countRedDora(allTiles: Tile[]): number {
+  return allTiles.filter(
+    (t) => t.suit !== "honor" && "isRedDora" in t && t.isRedDora,
+  ).length;
+}
+
+/**
+ * ドラを役として返す
+ */
+export function getDoraYaku(
+  allTiles: Tile[],
+  conditions: SpecialConditions | undefined,
+  isRiichi: boolean,
+): YakuInfo[] {
+  const yaku: YakuInfo[] = [];
+
+  // 表ドラ
+  if (conditions?.doraIndicators && conditions.doraIndicators.length > 0) {
+    const doraCount = countDora(allTiles, conditions.doraIndicators);
+    if (doraCount > 0) {
+      yaku.push({ name: "ドラ", han: doraCount });
+    }
+  }
+
+  // 裏ドラ（リーチ時のみ）
+  if (
+    isRiichi &&
+    conditions?.uraDoraIndicators &&
+    conditions.uraDoraIndicators.length > 0
+  ) {
+    const uraDoraCount = countDora(allTiles, conditions.uraDoraIndicators);
+    if (uraDoraCount > 0) {
+      yaku.push({ name: "裏ドラ", han: uraDoraCount });
+    }
+  }
+
+  // 赤ドラ
+  const redDoraCount = countRedDora(allTiles);
+  if (redDoraCount > 0) {
+    yaku.push({ name: "赤ドラ", han: redDoraCount });
+  }
+
+  return yaku;
 }

@@ -7,7 +7,8 @@ import type {
   HonorType,
   WaitType,
 } from "@/lib/mahjong-types";
-import { TileGroup, tilesMatch } from "./TileGroup";
+import { TileGroup } from "./TileGroup";
+import { tilesMatch } from "./tilesMatch";
 import { MahjongTile } from "./MahjongTile";
 
 interface TileHandProps {
@@ -17,8 +18,9 @@ interface TileHandProps {
   waitType?: WaitType;
   waitMeldIndex?: number; // 待ちの元になる面子のインデックス
   waitFromHead?: boolean; // 雀頭からの待ちか（単騎待ち）
-  tileClassName?: string; // 各牌に適用するクラス（サイズなど）
+  tileSize?: "sm" | "md" | "lg";
   className?: string;
+  showClosedAsFlat?: boolean; // 暗面子をグループ表示せず個別表示
 }
 
 // 牌の種類の順序（萬子→筒子→索子→字牌）
@@ -44,9 +46,9 @@ const honorOrder: Record<HonorType, number> = {
 function getTileSortValue(tile: Tile): number {
   const suitValue = suitOrder[tile.suit] * 100;
   if (tile.suit === "honor") {
-    return suitValue + honorOrder[tile.value as HonorType];
+    return suitValue + honorOrder[tile.value];
   }
-  return suitValue + (tile.value as number);
+  return suitValue + tile.value;
 }
 
 // 面子のソート値（最初の牌で決定）
@@ -189,8 +191,9 @@ export function TileHand({
   waitType,
   waitMeldIndex,
   waitFromHead,
-  tileClassName,
+  tileSize = "md",
   className,
+  showClosedAsFlat = false,
 }: TileHandProps) {
   // 待ち状態の手牌を生成（和了牌を除去）
   const waitingHand = createWaitingHand(
@@ -213,13 +216,67 @@ export function TileHand({
     (m) => m.state === "open" || m.type === "kantsu",
   );
 
-  // 門前の面子をソート
-  const sortedClosedMelds = [...closedMelds].sort(
+  // 晒した面子（副露・槓子）をソート
+  const sortedExposedMelds = [...exposedMelds].sort(
     (a, b) => getMeldSortValue(a) - getMeldSortValue(b),
   );
 
-  // 晒した面子（副露・槓子）をソート
-  const sortedExposedMelds = [...exposedMelds].sort(
+  const hasExposedMelds = sortedExposedMelds.length > 0;
+
+  // showClosedAsFlat: 暗面子と雀頭を個別の牌として表示
+  if (showClosedAsFlat) {
+    // 暗面子と雀頭の全牌を集めてソート
+    const closedTiles: Tile[] = [];
+    for (const meld of closedMelds) {
+      closedTiles.push(...meld.tiles);
+    }
+    closedTiles.push(...displayHead.tiles);
+    closedTiles.sort((a, b) => getTileSortValue(a) - getTileSortValue(b));
+
+    return (
+      <div
+        className={cn(
+          "flex flex-wrap items-end gap-1 py-4 sm:gap-2",
+          className,
+        )}
+      >
+        {/* 門前部分（個別表示） */}
+        <div className="flex flex-wrap items-end">
+          {closedTiles.map((tile, index) => (
+            <MahjongTile key={`tile-${index}`} tile={tile} size={tileSize} />
+          ))}
+        </div>
+
+        {/* 晒した面子（副露・槓子）（右側） */}
+        {hasExposedMelds && (
+          <div className="ml-2 flex items-end gap-2 sm:ml-4 sm:gap-3">
+            {sortedExposedMelds.map((meld, index) => (
+              <TileGroup
+                key={`exposed-${index}`}
+                meld={meld}
+                tileSize={tileSize}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* 和了牌 */}
+        {winTile && (
+          <div className="flex items-end gap-1 sm:ml-4">
+            <MahjongTile
+              tile={winTile}
+              size={tileSize}
+              className="bg-linear-to-br from-yellow-100 via-yellow-50 to-yellow-100 [--mahjong-tile-shadow:var(--color-yellow-50)]"
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // グループ表示（従来の動作）
+  // 門前の面子をソート
+  const sortedClosedMelds = [...closedMelds].sort(
     (a, b) => getMeldSortValue(a) - getMeldSortValue(b),
   );
 
@@ -233,35 +290,33 @@ export function TileHand({
     }
   }
 
-  const hasExposedMelds = sortedExposedMelds.length > 0;
-
   return (
     <div
-      className={cn("flex flex-wrap items-center gap-1 sm:gap-2", className)}
+      className={cn("flex flex-wrap items-end gap-1 py-4 sm:gap-2", className)}
     >
       {/* 門前部分（左側） */}
-      <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+      <div className="flex flex-wrap items-end gap-1 sm:gap-2">
         {sortedClosedMelds.map((meld, index) => (
           <span key={`closed-${index}`} className="contents">
             {index === headInsertIndex && (
-              <TileGroup head={displayHead} tileClassName={tileClassName} />
+              <TileGroup head={displayHead} tileSize={tileSize} />
             )}
-            <TileGroup meld={meld} tileClassName={tileClassName} />
+            <TileGroup meld={meld} tileSize={tileSize} />
           </span>
         ))}
         {headInsertIndex === sortedClosedMelds.length && (
-          <TileGroup head={displayHead} tileClassName={tileClassName} />
+          <TileGroup head={displayHead} tileSize={tileSize} />
         )}
       </div>
 
       {/* 晒した面子（副露・槓子）（右側） */}
       {hasExposedMelds && (
-        <div className="ml-2 flex items-center gap-2 sm:ml-4 sm:gap-3">
+        <div className="ml-2 flex items-end gap-2 sm:ml-4 sm:gap-3">
           {sortedExposedMelds.map((meld, index) => (
             <TileGroup
               key={`exposed-${index}`}
               meld={meld}
-              tileClassName={tileClassName}
+              tileSize={tileSize}
             />
           ))}
         </div>
@@ -269,13 +324,11 @@ export function TileHand({
 
       {/* 和了牌 */}
       {winTile && (
-        <div className="ml-3 flex items-center gap-1 sm:ml-4">
+        <div className="ml-3 flex items-end gap-1 sm:ml-4">
           <MahjongTile
             tile={winTile}
-            className={cn(
-              tileClassName,
-              "rounded-sm ring-2 ring-primary ring-offset-1",
-            )}
+            size={tileSize}
+            className="bg-linear-to-br from-yellow-100 via-yellow-50 to-yellow-100 [--mahjong-tile-shadow:var(--color-yellow-50)]"
           />
         </div>
       )}

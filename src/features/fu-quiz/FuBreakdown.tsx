@@ -33,9 +33,9 @@ const honorOrder: Record<HonorType, number> = {
 function getTileSortValue(tile: Tile): number {
   const suitValue = suitOrder[tile.suit] * 100;
   if (tile.suit === "honor") {
-    return suitValue + honorOrder[tile.value as HonorType];
+    return suitValue + honorOrder[tile.value];
   }
-  return suitValue + (tile.value as number);
+  return suitValue + tile.value;
 }
 
 // 符の内訳をソート（牌がある項目は牌の順序でソート）
@@ -109,9 +109,7 @@ export function FuBreakdown({ breakdown, total, rawTotal }: FuBreakdownProps) {
   return (
     <div className="space-y-2">
       <h4 className="text-sm font-medium">
-        <MahjongTerm term="符" showRuby>
-          符
-        </MahjongTerm>
+        <MahjongTerm term="符">符</MahjongTerm>
         の内訳
       </h4>
       {sortedBreakdown.map((item, index) => {
@@ -125,7 +123,7 @@ export function FuBreakdown({ breakdown, total, rawTotal }: FuBreakdownProps) {
               <span className="text-muted-foreground">
                 {termParts.map((part, partIndex) =>
                   part.termKey ? (
-                    <MahjongTerm key={partIndex} term={part.termKey} showRuby>
+                    <MahjongTerm key={partIndex} term={part.termKey}>
                       {part.text}
                     </MahjongTerm>
                   ) : (
@@ -138,11 +136,7 @@ export function FuBreakdown({ breakdown, total, rawTotal }: FuBreakdownProps) {
               </span>
               {/* 該当する牌を名称の後に表示（面子は横向き・裏向きを反映） */}
               {(item.meld || item.head) && (
-                <TileGroup
-                  meld={item.meld}
-                  head={item.head}
-                  tileClassName="text-2xl"
-                />
+                <TileGroup meld={item.meld} head={item.head} tileSize="sm" />
               )}
             </div>
             <span className="font-medium tabular-nums">{item.fu}符</span>

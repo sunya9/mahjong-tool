@@ -1,20 +1,22 @@
 import { useState } from "react";
+import { Contents } from "@/components/layout/Contents";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ScoreTable } from "./ScoreTable";
+import { ScoreTable } from "@/features/score-cheatsheet/ScoreTable";
 import { Minus, Plus } from "lucide-react";
 
-export function ScoreCheatsheetPage() {
+export default function Page() {
   const [isDealer, setIsDealer] = useState(false);
   const [honba, setHonba] = useState(0);
 
   return (
-    <div className="space-y-6">
-      {/* ヘッダー */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">点数早見表</h1>
-        <div className="flex items-center gap-4">
+    <>
+      <PageHeader
+        breadcrumbs={[{ label: "麻雀ツール", href: "/" }, { label: "点数表" }]}
+      >
+        <div className="ml-auto flex items-center gap-4">
           {/* 親/子スイッチ */}
           <div className="flex items-center gap-2">
             <Label
@@ -63,10 +65,10 @@ export function ScoreCheatsheetPage() {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* 点数表 */}
-      <ScoreTable isDealer={isDealer} honba={honba} />
-    </div>
+      </PageHeader>
+      <Contents>
+        <ScoreTable isDealer={isDealer} honba={honba} />
+      </Contents>
+    </>
   );
 }

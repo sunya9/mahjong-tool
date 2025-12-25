@@ -1,11 +1,16 @@
 import { useState, useMemo, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TileHand } from "@/components/mahjong/TileHand";
 import { MahjongTerm } from "@/components/mahjong/MahjongTerm";
 import { FuBreakdown } from "./FuBreakdown";
-import { getRandomProblem } from "@/data/quizProblems";
 import { generateFuOptions } from "@/lib/fu-calculator";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,6 +24,8 @@ import type {
 interface QuizCardProps {
   category: QuizCategory | "all";
   onResult: (isCorrect: boolean) => void;
+  onNext: () => void;
+  problem: QuizProblem;
 }
 
 type QuizState = "answering" | "result";
@@ -42,10 +49,7 @@ const waitTermMap: Record<WaitType, string> = {
   tanki: "単騎待ち",
 };
 
-export function QuizCard({ category, onResult }: QuizCardProps) {
-  const [problem, setProblem] = useState<QuizProblem>(() =>
-    getRandomProblem(category),
-  );
+export function QuizCard({ onResult, onNext, problem }: QuizCardProps) {
   const [selectedFu, setSelectedFu] = useState<number | null>(null);
   const [state, setState] = useState<QuizState>("answering");
 
@@ -68,10 +72,8 @@ export function QuizCard({ category, onResult }: QuizCardProps) {
   );
 
   const handleNext = useCallback(() => {
-    setProblem(getRandomProblem(category));
-    setSelectedFu(null);
-    setState("answering");
-  }, [category]);
+    onNext();
+  }, [onNext]);
 
   return (
     <Card
@@ -83,7 +85,7 @@ export function QuizCard({ category, onResult }: QuizCardProps) {
     >
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">
+          <CardTitle>
             この手の<MahjongTerm term="符">符</MahjongTerm>は？
           </CardTitle>
           {/* 成否アイコン */}
@@ -116,7 +118,7 @@ export function QuizCard({ category, onResult }: QuizCardProps) {
             waitType={problem.waitType}
             waitMeldIndex={problem.waitMeldIndex}
             waitFromHead={problem.waitFromHead}
-            tileClassName="text-4xl"
+            showClosedAsFlat
           />
         </div>
 
@@ -142,64 +144,64 @@ export function QuizCard({ category, onResult }: QuizCardProps) {
               {getWindName(problem.seatWind)}家
             </MahjongTerm>
           </Badge>
-          {problem.isMenzen ? (
-            <Badge variant="secondary">
+          <Badge variant="outline">
+            {problem.isMenzen ? (
               <MahjongTerm term="門前">門前</MahjongTerm>
-            </Badge>
-          ) : (
-            <Badge variant="outline">
-              <MahjongTerm term="副露">副露</MahjongTerm>あり
-            </Badge>
-          )}
+            ) : (
+              <>
+                <MahjongTerm term="副露">副露</MahjongTerm>あり
+              </>
+            )}
+          </Badge>
         </div>
-
-        {/* 回答選択肢 */}
-        <div className="pt-2">
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-4">
-            {fuOptions.map((fu) => {
-              const isSelected = selectedFu === fu;
-              const isAnswer = problem.correctFu === fu;
-              const showResult = state === "result";
-
-              return (
-                <Button
-                  key={fu}
-                  variant="outline"
-                  size="lg"
-                  onClick={() => state === "answering" && handleSelect(fu)}
-                  disabled={showResult}
-                  className={cn(
-                    "text-lg font-bold",
-                    showResult &&
-                      isAnswer &&
-                      "border-green-500 bg-green-50 text-green-700 dark:border-green-600 dark:bg-green-950 dark:text-green-400",
-                    showResult &&
-                      isSelected &&
-                      !isAnswer &&
-                      "border-red-500 bg-red-50 text-red-700 dark:border-red-600 dark:bg-red-950 dark:text-red-400",
-                  )}
-                >
-                  {fu}符
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* 結果表示 */}
         {state === "result" && (
-          <div className="space-y-4 pt-2">
+          <div className="pt-2">
             <FuBreakdown
               breakdown={problem.fuBreakdown}
               total={problem.correctFu}
               rawTotal={rawTotal}
             />
-            <Button onClick={handleNext} className="w-full" size="lg">
-              次の問題へ
-            </Button>
           </div>
         )}
       </CardContent>
+      <CardFooter className="grid grid-cols-1 gap-1 sm:grid-cols-4">
+        {/* 回答選択肢 */}
+        {fuOptions.map((fu) => {
+          const isSelected = selectedFu === fu;
+          const isAnswer = problem.correctFu === fu;
+          const showResult = state === "result";
+
+          return (
+            <Button
+              key={fu}
+              variant="outline"
+              size="lg"
+              onClick={() => state === "answering" && handleSelect(fu)}
+              disabled={showResult}
+              className={cn(
+                "flex-1 text-lg",
+                showResult &&
+                  isAnswer &&
+                  "border-green-500 bg-green-50 text-green-700 dark:border-green-600 dark:bg-green-950 dark:text-green-400",
+                showResult &&
+                  isSelected &&
+                  !isAnswer &&
+                  "border-red-500 bg-red-50 text-red-700 dark:border-red-600 dark:bg-red-950 dark:text-red-400",
+              )}
+            >
+              {fu}符
+            </Button>
+          );
+        })}
+      </CardFooter>
+      {state === "result" && (
+        <CardFooter>
+          <Button onClick={handleNext} className="w-full" size="lg">
+            次の問題へ
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }

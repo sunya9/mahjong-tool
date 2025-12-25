@@ -1,121 +1,62 @@
-import type { HonorType, Tile, TileSuit } from "@/lib/mahjong-types";
-
-// GL-MahjongTile font character mappings
-// Based on: https://github.com/Gutenberg-Labo/DingbatFonts
-export const TILE_CHARS = {
-  // 風牌 (1-4)
-  east: "1", // 東
-  south: "2", // 南
-  west: "3", // 西
-  north: "4", // 北
-
-  // 三元牌 (5-7)
-  white: "5", // 白
-  green: "6", // 發
-  red: "7", // 中
-
-  // 萬子 (q-o = 1-9)
-  man: ["q", "w", "e", "r", "t", "y", "u", "i", "o"],
-
-  // 索子 (a-l = 1-9、但し'i'は飛ばしてj,k,lまで)
-  sou: ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
-
-  // 筒子 (z-m, comma, period = 1-9)
-  pin: ["z", "x", "c", "v", "b", "n", "m", ",", "."],
-
-  // 裏面
-  back: "9",
-} as const;
-
-// 牌の文字を取得
-export function getTileChar(tile: Tile): string {
-  if (tile.suit === "honor") {
-    return TILE_CHARS[tile.value as HonorType];
-  }
-  const suitArray = TILE_CHARS[tile.suit as Exclude<TileSuit, "honor">];
-  return suitArray[(tile.value as number) - 1];
-}
-
-// 横向き字牌のマッピング（Shiftキーで入力される文字）
-const ROTATED_HONOR_CHARS: Record<HonorType, string> = {
-  east: "!", // Shift+1
-  south: "@", // Shift+2
-  west: "#", // Shift+3
-  north: "$", // Shift+4
-  white: "%", // Shift+5
-  green: "^", // Shift+6
-  red: "&", // Shift+7
-};
-
-// 横向き牌の文字を取得（Shiftキーで入力される文字）
-export function getRotatedTileChar(tile: Tile): string {
-  if (tile.suit === "honor") {
-    return ROTATED_HONOR_CHARS[tile.value as HonorType];
-  }
-  const char = getTileChar(tile);
-  // 数牌はアルファベットなので大文字に
-  return char.toUpperCase();
-}
-
-// 裏牌の文字を取得
-export function getBackTileChar(): string {
-  return TILE_CHARS.back;
-}
-
-// 牌の名前を取得
-export function getTileName(tile: Tile): string {
-  if (tile.suit === "honor") {
-    const names: Record<HonorType, string> = {
-      east: "東",
-      south: "南",
-      west: "西",
-      north: "北",
-      white: "白",
-      green: "發",
-      red: "中",
-    };
-    return names[tile.value as HonorType];
-  }
-
-  const suitNames: Record<Exclude<TileSuit, "honor">, string> = {
-    man: "萬",
-    pin: "筒",
-    sou: "索",
-  };
-  const numbers = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
-  return `${numbers[(tile.value as number) - 1]}${suitNames[tile.suit]}`;
-}
-
-// ヘルパー関数：牌を簡単に作成
-export function tile(suit: TileSuit, value: number | HonorType): Tile {
-  return { suit, value };
-}
+import {
+  type HonorType,
+  type HonorTile,
+  type NumberTile,
+  type TileNumber,
+} from "@/lib/mahjong-types";
 
 // 数牌のショートハンド
-export function man(value: number): Tile {
-  return { suit: "man", value };
+function man(value: TileNumber, isRedDora?: boolean): NumberTile {
+  return { suit: "man", value, isRedDora };
 }
 
-export function pin(value: number): Tile {
-  return { suit: "pin", value };
+function pin(value: TileNumber, isRedDora?: boolean): NumberTile {
+  return { suit: "pin", value, isRedDora };
 }
 
-export function sou(value: number): Tile {
-  return { suit: "sou", value };
+function sou(value: TileNumber, isRedDora?: boolean): NumberTile {
+  return { suit: "sou", value, isRedDora };
 }
 
 // 字牌のショートハンド
-export function honor(type: HonorType): Tile {
+function honor(type: HonorType): HonorTile {
   return { suit: "honor", value: type };
 }
 
-// 風牌
-export const EAST = honor("east");
-export const SOUTH = honor("south");
-export const WEST = honor("west");
-export const NORTH = honor("north");
-
-// 三元牌
-export const WHITE = honor("white");
-export const GREEN = honor("green");
-export const RED = honor("red");
+export const man_1 = man(1);
+export const man_2 = man(2);
+export const man_3 = man(3);
+export const man_4 = man(4);
+export const man_5 = man(5);
+export const man_5_dora = man(5, true);
+export const man_6 = man(6);
+export const man_7 = man(7);
+export const man_8 = man(8);
+export const man_9 = man(9);
+export const pin_1 = pin(1);
+export const pin_2 = pin(2);
+export const pin_3 = pin(3);
+export const pin_4 = pin(4);
+export const pin_5 = pin(5);
+export const pin_5_dora = pin(5, true);
+export const pin_6 = pin(6);
+export const pin_7 = pin(7);
+export const pin_8 = pin(8);
+export const pin_9 = pin(9);
+export const sou_1 = sou(1);
+export const sou_2 = sou(2);
+export const sou_3 = sou(3);
+export const sou_4 = sou(4);
+export const sou_5 = sou(5);
+export const sou_5_dora = sou(5, true);
+export const sou_6 = sou(6);
+export const sou_7 = sou(7);
+export const sou_8 = sou(8);
+export const sou_9 = sou(9);
+export const honor_east = honor("east");
+export const honor_south = honor("south");
+export const honor_west = honor("west");
+export const honor_north = honor("north");
+export const honor_white = honor("white");
+export const honor_green = honor("green");
+export const honor_red = honor("red");

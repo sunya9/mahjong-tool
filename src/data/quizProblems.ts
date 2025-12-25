@@ -1,17 +1,34 @@
-import type { QuizProblem, Meld, Head, Tile } from "@/lib/mahjong-types";
-import { man, pin, sou, honor } from "./tiles";
+import type {
+  QuizProblem,
+  Head,
+  Tile,
+  NumberTile,
+  ShuntsuMeld,
+  KoutsuMeld,
+  KantsuMeld,
+} from "@/lib/mahjong-types";
+import * as t from "./tiles";
 import { generateProblemForCategory } from "@/lib/hand-generator";
 
 // ヘルパー関数
-function shuntsu(tiles: Tile[], state: "closed" | "open" = "closed"): Meld {
+function shuntsu(
+  tiles: [NumberTile, NumberTile, NumberTile],
+  state: "closed" | "open" = "closed",
+): ShuntsuMeld {
   return { type: "shuntsu", tiles, state };
 }
 
-function koutsu(tiles: Tile[], state: "closed" | "open" = "closed"): Meld {
+function koutsu(
+  tiles: [Tile, Tile, Tile],
+  state: "closed" | "open" = "closed",
+): KoutsuMeld {
   return { type: "koutsu", tiles, state };
 }
 
-function kantsu(tiles: Tile[], state: "closed" | "open" = "closed"): Meld {
+function kantsu(
+  tiles: [Tile, Tile, Tile, Tile],
+  state: "closed" | "open" = "closed",
+): KantsuMeld {
   return { type: "kantsu", tiles, state };
 }
 
@@ -24,13 +41,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "wait-001",
     melds: [
-      shuntsu([man(1), man(2), man(3)]),
-      shuntsu([man(4), man(5), man(6)]),
-      shuntsu([pin(2), pin(3), pin(4)]),
-      shuntsu([sou(5), sou(6), sou(7)]),
+      shuntsu([t.man_1, t.man_2, t.man_3]),
+      shuntsu([t.man_4, t.man_5, t.man_6]),
+      shuntsu([t.pin_2, t.pin_3, t.pin_4]),
+      shuntsu([t.sou_5, t.sou_6, t.sou_7]),
     ],
-    head: head(sou(2)),
-    winTile: man(3),
+    head: head(t.sou_2),
+    winTile: t.man_3,
     waitType: "ryanmen",
     winType: "tsumo",
     roundWind: "east",
@@ -46,13 +63,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "wait-002",
     melds: [
-      shuntsu([man(1), man(2), man(3)]),
-      shuntsu([pin(4), pin(5), pin(6)]),
-      shuntsu([sou(7), sou(8), sou(9)]),
-      koutsu([pin(1), pin(1), pin(1)]),
+      shuntsu([t.man_1, t.man_2, t.man_3]),
+      shuntsu([t.pin_4, t.pin_5, t.pin_6]),
+      shuntsu([t.sou_7, t.sou_8, t.sou_9]),
+      koutsu([t.pin_1, t.pin_1, t.pin_1]),
     ],
-    head: head(sou(5)),
-    winTile: man(2),
+    head: head(t.sou_5),
+    winTile: t.man_2,
     waitType: "kanchan",
     winType: "ron",
     roundWind: "east",
@@ -69,13 +86,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "wait-003",
     melds: [
-      shuntsu([man(1), man(2), man(3)]),
-      shuntsu([pin(2), pin(3), pin(4)]),
-      shuntsu([sou(4), sou(5), sou(6)]),
-      koutsu([honor("green"), honor("green"), honor("green")]),
+      shuntsu([t.man_1, t.man_2, t.man_3]),
+      shuntsu([t.pin_2, t.pin_3, t.pin_4]),
+      shuntsu([t.sou_4, t.sou_5, t.sou_6]),
+      koutsu([t.honor_green, t.honor_green, t.honor_green]),
     ],
-    head: head(man(5)),
-    winTile: man(3),
+    head: head(t.man_5),
+    winTile: t.man_3,
     waitType: "penchan",
     winType: "tsumo",
     roundWind: "east",
@@ -93,13 +110,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "wait-004",
     melds: [
-      shuntsu([man(2), man(3), man(4)]),
-      shuntsu([pin(5), pin(6), pin(7)]),
-      koutsu([sou(3), sou(3), sou(3)]),
-      koutsu([sou(7), sou(7), sou(7)], "open"), // ロンで完成 → 明刻
+      shuntsu([t.man_2, t.man_3, t.man_4]),
+      shuntsu([t.pin_5, t.pin_6, t.pin_7]),
+      koutsu([t.sou_3, t.sou_3, t.sou_3]),
+      koutsu([t.sou_7, t.sou_7, t.sou_7], "open"), // ロンで完成 → 明刻
     ],
-    head: head(honor("white")),
-    winTile: sou(7),
+    head: head(t.honor_white),
+    winTile: t.sou_7,
     waitType: "shanpon",
     winType: "ron",
     roundWind: "east",
@@ -117,13 +134,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "wait-005",
     melds: [
-      shuntsu([man(1), man(2), man(3)]),
-      shuntsu([pin(4), pin(5), pin(6)]),
-      shuntsu([sou(7), sou(8), sou(9)]),
-      koutsu([honor("red"), honor("red"), honor("red")]),
+      shuntsu([t.man_1, t.man_2, t.man_3]),
+      shuntsu([t.pin_4, t.pin_5, t.pin_6]),
+      shuntsu([t.sou_7, t.sou_8, t.sou_9]),
+      koutsu([t.honor_red, t.honor_red, t.honor_red]),
     ],
-    head: head(man(5)),
-    winTile: man(5),
+    head: head(t.man_5),
+    winTile: t.man_5,
     waitType: "tanki",
     winType: "tsumo",
     roundWind: "south",
@@ -143,13 +160,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "meld-001",
     melds: [
-      shuntsu([man(2), man(3), man(4)]),
-      shuntsu([pin(3), pin(4), pin(5)]),
-      shuntsu([sou(4), sou(5), sou(6)]),
-      shuntsu([sou(6), sou(7), sou(8)]),
+      shuntsu([t.man_2, t.man_3, t.man_4]),
+      shuntsu([t.pin_3, t.pin_4, t.pin_5]),
+      shuntsu([t.sou_4, t.sou_5, t.sou_6]),
+      shuntsu([t.sou_6, t.sou_7, t.sou_8]),
     ],
-    head: head(pin(9)),
-    winTile: man(2),
+    head: head(t.pin_9),
+    winTile: t.man_2,
     waitType: "ryanmen",
     winType: "ron",
     roundWind: "east",
@@ -162,13 +179,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "meld-002",
     melds: [
-      koutsu([man(5), man(5), man(5)], "open"), // ロンで完成 → 明刻
-      koutsu([pin(3), pin(3), pin(3)]),
-      shuntsu([sou(2), sou(3), sou(4)]),
-      shuntsu([sou(6), sou(7), sou(8)]),
+      koutsu([t.man_5, t.man_5, t.man_5], "open"), // ロンで完成 → 明刻
+      koutsu([t.pin_3, t.pin_3, t.pin_3]),
+      shuntsu([t.sou_2, t.sou_3, t.sou_4]),
+      shuntsu([t.sou_6, t.sou_7, t.sou_8]),
     ],
-    head: head(honor("east")),
-    winTile: man(5),
+    head: head(t.honor_east),
+    winTile: t.man_5,
     waitType: "shanpon",
     winType: "ron",
     roundWind: "east",
@@ -185,13 +202,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "meld-003",
     melds: [
-      koutsu([man(1), man(1), man(1)]),
-      koutsu([pin(9), pin(9), pin(9)]),
-      shuntsu([sou(3), sou(4), sou(5)]),
-      shuntsu([sou(6), sou(7), sou(8)]),
+      koutsu([t.man_1, t.man_1, t.man_1]),
+      koutsu([t.pin_9, t.pin_9, t.pin_9]),
+      shuntsu([t.sou_3, t.sou_4, t.sou_5]),
+      shuntsu([t.sou_6, t.sou_7, t.sou_8]),
     ],
-    head: head(honor("south")),
-    winTile: sou(5),
+    head: head(t.honor_south),
+    winTile: t.sou_5,
     waitType: "ryanmen",
     winType: "tsumo",
     roundWind: "east",
@@ -210,13 +227,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "meld-004",
     melds: [
-      koutsu([man(2), man(2), man(2)], "open"),
-      koutsu([pin(8), pin(8), pin(8)], "open"),
-      shuntsu([sou(1), sou(2), sou(3)]),
-      shuntsu([sou(5), sou(6), sou(7)]),
+      koutsu([t.man_2, t.man_2, t.man_2], "open"),
+      koutsu([t.pin_8, t.pin_8, t.pin_8], "open"),
+      shuntsu([t.sou_1, t.sou_2, t.sou_3]),
+      shuntsu([t.sou_5, t.sou_6, t.sou_7]),
     ],
-    head: head(honor("west")),
-    winTile: sou(7),
+    head: head(t.honor_west),
+    winTile: t.sou_7,
     waitType: "ryanmen",
     winType: "ron",
     roundWind: "south",
@@ -233,13 +250,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "meld-005",
     melds: [
-      kantsu([man(9), man(9), man(9), man(9)]),
-      shuntsu([pin(2), pin(3), pin(4)]),
-      shuntsu([sou(3), sou(4), sou(5)]),
-      shuntsu([sou(6), sou(7), sou(8)]),
+      kantsu([t.man_9, t.man_9, t.man_9, t.man_9]),
+      shuntsu([t.pin_2, t.pin_3, t.pin_4]),
+      shuntsu([t.sou_3, t.sou_4, t.sou_5]),
+      shuntsu([t.sou_6, t.sou_7, t.sou_8]),
     ],
-    head: head(pin(5)),
-    winTile: sou(5),
+    head: head(t.pin_5),
+    winTile: t.sou_5,
     waitType: "ryanmen",
     winType: "tsumo",
     roundWind: "east",
@@ -258,13 +275,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "head-001",
     melds: [
-      shuntsu([man(1), man(2), man(3)]),
-      shuntsu([pin(4), pin(5), pin(6)]),
-      shuntsu([sou(2), sou(3), sou(4)]),
-      koutsu([sou(8), sou(8), sou(8)]),
+      shuntsu([t.man_1, t.man_2, t.man_3]),
+      shuntsu([t.pin_4, t.pin_5, t.pin_6]),
+      shuntsu([t.sou_2, t.sou_3, t.sou_4]),
+      koutsu([t.sou_8, t.sou_8, t.sou_8]),
     ],
-    head: head(honor("east")),
-    winTile: man(3),
+    head: head(t.honor_east),
+    winTile: t.man_3,
     waitType: "ryanmen",
     winType: "ron",
     roundWind: "east",
@@ -281,13 +298,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "head-002",
     melds: [
-      shuntsu([man(2), man(3), man(4)]),
-      shuntsu([pin(5), pin(6), pin(7)]),
-      shuntsu([sou(3), sou(4), sou(5)]),
-      koutsu([pin(2), pin(2), pin(2)]),
+      shuntsu([t.man_2, t.man_3, t.man_4]),
+      shuntsu([t.pin_5, t.pin_6, t.pin_7]),
+      shuntsu([t.sou_3, t.sou_4, t.sou_5]),
+      koutsu([t.pin_2, t.pin_2, t.pin_2]),
     ],
-    head: head(honor("red")),
-    winTile: man(2),
+    head: head(t.honor_red),
+    winTile: t.man_2,
     waitType: "ryanmen",
     winType: "tsumo",
     roundWind: "south",
@@ -307,13 +324,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "mixed-001",
     melds: [
-      koutsu([honor("east"), honor("east"), honor("east")]),
-      koutsu([honor("white"), honor("white"), honor("white")]),
-      shuntsu([man(2), man(3), man(4)]),
-      shuntsu([pin(6), pin(7), pin(8)]),
+      koutsu([t.honor_east, t.honor_east, t.honor_east]),
+      koutsu([t.honor_white, t.honor_white, t.honor_white]),
+      shuntsu([t.man_2, t.man_3, t.man_4]),
+      shuntsu([t.pin_6, t.pin_7, t.pin_8]),
     ],
-    head: head(sou(5)),
-    winTile: man(4),
+    head: head(t.sou_5),
+    winTile: t.man_4,
     waitType: "ryanmen",
     winType: "tsumo",
     roundWind: "east",
@@ -331,13 +348,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "mixed-002",
     melds: [
-      koutsu([man(1), man(1), man(1)], "open"),
-      kantsu([pin(9), pin(9), pin(9), pin(9)], "open"),
-      shuntsu([sou(2), sou(3), sou(4)]),
-      shuntsu([sou(5), sou(6), sou(7)]),
+      koutsu([t.man_1, t.man_1, t.man_1], "open"),
+      kantsu([t.pin_9, t.pin_9, t.pin_9, t.pin_9], "open"),
+      shuntsu([t.sou_2, t.sou_3, t.sou_4]),
+      shuntsu([t.sou_5, t.sou_6, t.sou_7]),
     ],
-    head: head(honor("green")),
-    winTile: sou(4),
+    head: head(t.honor_green),
+    winTile: t.sou_4,
     waitType: "kanchan",
     winType: "ron",
     roundWind: "south",
@@ -356,13 +373,13 @@ export const quizProblems: QuizProblem[] = [
   {
     id: "mixed-003",
     melds: [
-      koutsu([honor("south"), honor("south"), honor("south")]),
-      koutsu([man(5), man(5), man(5)]),
-      shuntsu([pin(3), pin(4), pin(5)]),
-      shuntsu([sou(7), sou(8), sou(9)]),
+      koutsu([t.honor_south, t.honor_south, t.honor_south]),
+      koutsu([t.man_5, t.man_5, t.man_5]),
+      shuntsu([t.pin_3, t.pin_4, t.pin_5]),
+      shuntsu([t.sou_7, t.sou_8, t.sou_9]),
     ],
-    head: head(honor("south")),
-    winTile: honor("south"),
+    head: head(t.honor_south),
+    winTile: t.honor_south,
     waitType: "tanki",
     winType: "tsumo",
     roundWind: "south",

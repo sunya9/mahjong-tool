@@ -1,24 +1,19 @@
 import { cn } from "@/lib/utils";
-import type { Meld, Head, Tile } from "@/lib/mahjong-types";
+import type { Meld, Head } from "@/lib/mahjong-types";
 import { MahjongTile } from "./MahjongTile";
 
 interface TileGroupProps {
   meld?: Meld;
   head?: Head;
-  tileClassName?: string; // 各牌に適用するクラス（サイズなど）
+  tileSize?: "sm" | "md" | "lg";
   highlightIndex?: number; // 強調する牌のインデックス
   className?: string;
-}
-
-// 牌が一致するかチェック
-function tilesMatch(a: Tile, b: Tile): boolean {
-  return a.suit === b.suit && a.value === b.value;
 }
 
 export function TileGroup({
   meld,
   head,
-  tileClassName,
+  tileSize = "md",
   highlightIndex,
   className,
 }: TileGroupProps) {
@@ -42,13 +37,13 @@ export function TileGroup({
   };
 
   return (
-    <div className={cn("inline-flex items-center", className)}>
+    <div className={cn("inline-flex items-end gap-px", className)}>
       {tiles.map((tile, index) => (
         <MahjongTile
           key={index}
           tile={tile}
+          size={tileSize}
           className={cn(
-            tileClassName,
             highlightIndex === index &&
               "rounded-sm ring-2 ring-primary ring-offset-1",
           )}
@@ -58,5 +53,3 @@ export function TileGroup({
     </div>
   );
 }
-
-export { tilesMatch };

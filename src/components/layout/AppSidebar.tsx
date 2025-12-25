@@ -1,15 +1,9 @@
-import { Link, useLocation } from "wouter";
-import {
-  BookOpen,
-  Calculator,
-  FileQuestion,
-  Hash,
-  Home,
-  Table,
-} from "lucide-react";
+import { usePageContext } from "vike-react/usePageContext";
+import { BookOpen, Calculator, Hash, Home, Table } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -18,11 +12,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Switch } from "@/components/ui/switch";
+import { useReading } from "@/context/useReading";
 
 const quizItems = [
   {
     title: "符クイズ",
-    url: "/quiz",
+    url: "/fu-quiz",
     icon: Hash,
   },
   {
@@ -54,7 +50,8 @@ const otherItems = [
 ];
 
 export function AppSidebar() {
-  const [location] = useLocation();
+  const { urlPathname: location } = usePageContext();
+  const { showReading, setShowReading } = useReading();
 
   return (
     <Sidebar>
@@ -62,11 +59,11 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              render={<Link href="/" />}
+              render={<a href="/" />}
               size="lg"
               isActive={location === "/"}
             >
-              <Home className="size-4" />
+              <Home />
               <span className="font-bold">麻雀ツール</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -74,19 +71,16 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>
-            <FileQuestion className="mr-2 size-4" />
-            クイズ
-          </SidebarGroupLabel>
+          <SidebarGroupLabel>クイズ</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {quizItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    render={<Link href={item.url} />}
+                    render={<a href={item.url} />}
                     isActive={location.startsWith(item.url)}
                   >
-                    <item.icon className="size-4" />
+                    <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -95,19 +89,16 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>
-            <Table className="mr-2 size-4" />
-            早見表
-          </SidebarGroupLabel>
+          <SidebarGroupLabel>早見表</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {cheatsheetItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    render={<Link href={item.url} />}
+                    render={<a href={item.url} />}
                     isActive={location === item.url}
                   >
-                    <item.icon className="size-4" />
+                    <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -116,19 +107,16 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>
-            <BookOpen className="mr-2 size-4" />
-            その他
-          </SidebarGroupLabel>
+          <SidebarGroupLabel>その他</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {otherItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    render={<Link href={item.url} />}
+                    render={<a href={item.url} />}
                     isActive={location === item.url}
                   >
-                    <item.icon className="size-4" />
+                    <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -137,6 +125,16 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <label className="flex cursor-pointer items-center justify-between px-2 py-1 text-sm">
+          <span className="text-muted-foreground">読み仮名を表示</span>
+          <Switch
+            checked={showReading}
+            onCheckedChange={setShowReading}
+            size="sm"
+          />
+        </label>
+      </SidebarFooter>
     </Sidebar>
   );
 }

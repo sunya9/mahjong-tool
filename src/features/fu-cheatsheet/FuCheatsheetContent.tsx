@@ -9,26 +9,19 @@ import {
 } from "@/components/ui/table";
 import { MahjongTile } from "@/components/mahjong/MahjongTile";
 import { MahjongTerm } from "@/components/mahjong/MahjongTerm";
-import { man, pin, sou, honor } from "@/data/tiles";
+import * as t from "@/data/tiles";
 
-export function FuCheatsheetPage() {
+export function FuCheatsheetContent() {
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold">符計算早見表</h1>
-        <p className="text-muted-foreground">
-          符の計算方法と点数への影響を確認できます
-        </p>
-      </div>
-
+    <div className="space-y-2 sm:space-y-6">
       {/* 基本符 */}
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">
+        <CardHeader>
+          <CardTitle>
             <MahjongTerm term="副底">副底</MahjongTerm>（基本符）
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 sm:px-4 sm:py-6">
           <Table>
             <TableHeader>
               <TableRow>
@@ -55,8 +48,8 @@ export function FuCheatsheetPage() {
 
       {/* ツモ符 */}
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">
+        <CardHeader>
+          <CardTitle>
             <MahjongTerm term="ツモ">ツモ</MahjongTerm>符
           </CardTitle>
         </CardHeader>
@@ -83,12 +76,12 @@ export function FuCheatsheetPage() {
 
       {/* 待ち符 */}
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">
+        <CardHeader>
+          <CardTitle>
             <MahjongTerm term="待ち">待ち</MahjongTerm>符
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 sm:px-4 sm:py-6">
           <Table>
             <TableHeader>
               <TableRow>
@@ -100,86 +93,78 @@ export function FuCheatsheetPage() {
             <TableBody>
               <TableRow>
                 <TableCell>
-                  <MahjongTerm term="両面待ち" showRuby>
-                    両面待ち
-                  </MahjongTerm>
+                  <MahjongTerm term="両面待ち">両面待ち</MahjongTerm>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <MahjongTile tile={man(2)} className="text-2xl" />
-                    <MahjongTile tile={man(3)} className="text-2xl" />
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      → 1,4待ち
-                    </span>
+                    <MahjongTile tile={t.man_2} size="sm" />
+                    <MahjongTile tile={t.man_3} size="sm" />
+                    <span className="mx-1 text-muted-foreground">→</span>
+                    <MahjongTile tile={t.man_1} size="sm" />
+                    <MahjongTile tile={t.man_4} size="sm" />
+                    <span className="text-sm text-muted-foreground">待ち</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-bold">0符</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <MahjongTerm term="双碰待ち" showRuby>
-                    双碰待ち
-                  </MahjongTerm>
+                  <MahjongTerm term="双碰待ち">双碰待ち</MahjongTerm>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <MahjongTile tile={pin(5)} className="text-2xl" />
-                    <MahjongTile tile={pin(5)} className="text-2xl" />
-                    <MahjongTile tile={sou(8)} className="text-2xl" />
-                    <MahjongTile tile={sou(8)} className="text-2xl" />
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      → 5p,8s待ち
-                    </span>
+                    <MahjongTile tile={t.pin_5} size="sm" />
+                    <MahjongTile tile={t.pin_5} size="sm" />
+                    <MahjongTile tile={t.sou_8} size="sm" />
+                    <MahjongTile tile={t.sou_8} size="sm" />
+                    <span className="mx-1 text-muted-foreground">→</span>
+                    <MahjongTile tile={t.pin_5} size="sm" />
+                    <MahjongTile tile={t.sou_8} size="sm" />
+                    <span className="text-sm text-muted-foreground">待ち</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-bold">0符</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <MahjongTerm term="嵌張待ち" showRuby>
-                    嵌張待ち
-                  </MahjongTerm>
+                  <MahjongTerm term="嵌張待ち">嵌張待ち</MahjongTerm>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <MahjongTile tile={sou(4)} className="text-2xl" />
-                    <MahjongTile tile={sou(6)} className="text-2xl" />
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      → 5待ち
-                    </span>
+                    <MahjongTile tile={t.sou_4} size="sm" />
+                    <MahjongTile tile={t.sou_6} size="sm" />
+                    <span className="mx-1 text-muted-foreground">→</span>
+                    <MahjongTile tile={t.sou_5} size="sm" />
+                    <span className="text-sm text-muted-foreground">待ち</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-bold">2符</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <MahjongTerm term="辺張待ち" showRuby>
-                    辺張待ち
-                  </MahjongTerm>
+                  <MahjongTerm term="辺張待ち">辺張待ち</MahjongTerm>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <MahjongTile tile={man(1)} className="text-2xl" />
-                    <MahjongTile tile={man(2)} className="text-2xl" />
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      → 3待ち
-                    </span>
+                    <MahjongTile tile={t.man_1} size="sm" />
+                    <MahjongTile tile={t.man_2} size="sm" />
+                    <span className="mx-1 text-muted-foreground">→</span>
+                    <MahjongTile tile={t.man_3} size="sm" />
+                    <span className="text-sm text-muted-foreground">待ち</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-bold">2符</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <MahjongTerm term="単騎待ち" showRuby>
-                    単騎待ち
-                  </MahjongTerm>
+                  <MahjongTerm term="単騎待ち">単騎待ち</MahjongTerm>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <MahjongTile tile={honor("white")} className="text-2xl" />
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      → 白待ち
-                    </span>
+                    <MahjongTile tile={t.honor_white} size="sm" />
+                    <span className="mx-1 text-muted-foreground">→</span>
+                    <MahjongTile tile={t.honor_white} size="sm" />
+                    <span className="text-sm text-muted-foreground">待ち</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-bold">2符</TableCell>
@@ -191,15 +176,12 @@ export function FuCheatsheetPage() {
 
       {/* 雀頭符 */}
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">
-            <MahjongTerm term="雀頭" showRuby>
-              雀頭
-            </MahjongTerm>
-            符
+        <CardHeader>
+          <CardTitle>
+            <MahjongTerm term="雀頭">雀頭</MahjongTerm>符
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 sm:px-4 sm:py-6">
           <Table>
             <TableHeader>
               <TableRow>
@@ -211,34 +193,28 @@ export function FuCheatsheetPage() {
             <TableBody>
               <TableRow>
                 <TableCell>
-                  <MahjongTerm term="数牌" showRuby>
-                    数牌
-                  </MahjongTerm>
-                  ・<MahjongTerm term="オタ風">オタ風</MahjongTerm>
+                  <MahjongTerm term="数牌">数牌</MahjongTerm>・
+                  <MahjongTerm term="オタ風">オタ風</MahjongTerm>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <MahjongTile tile={man(5)} className="text-2xl" />
-                    <MahjongTile tile={man(5)} className="text-2xl" />
+                    <MahjongTile tile={t.man_5} size="sm" />
+                    <MahjongTile tile={t.man_5} size="sm" />
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-bold">0符</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <MahjongTerm term="役牌" showRuby>
-                    役牌
-                  </MahjongTerm>
+                  <MahjongTerm term="役牌">役牌</MahjongTerm>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <MahjongTile tile={honor("red")} className="text-2xl" />
-                    <MahjongTile tile={honor("red")} className="text-2xl" />
+                    <MahjongTile tile={t.honor_red} size="sm" />
+                    <MahjongTile tile={t.honor_red} size="sm" />
                     <span className="ml-1 text-xs text-muted-foreground">
-                      <MahjongTerm term="三元牌" showRuby>
-                        三元牌
-                      </MahjongTerm>
-                      ・<MahjongTerm term="場風">場風</MahjongTerm>・
+                      <MahjongTerm term="三元牌">三元牌</MahjongTerm>・
+                      <MahjongTerm term="場風">場風</MahjongTerm>・
                       <MahjongTerm term="自風">自風</MahjongTerm>
                     </span>
                   </div>
@@ -246,11 +222,14 @@ export function FuCheatsheetPage() {
                 <TableCell className="text-right font-bold">2符</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>連風牌（ダブ東など）</TableCell>
+                <TableCell>
+                  <MahjongTerm term="連風牌">連風牌</MahjongTerm>
+                  （ダブ東など）
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <MahjongTile tile={honor("east")} className="text-2xl" />
-                    <MahjongTile tile={honor("east")} className="text-2xl" />
+                    <MahjongTile tile={t.honor_east} size="sm" />
+                    <MahjongTile tile={t.honor_east} size="sm" />
                     <span className="ml-1 text-xs text-muted-foreground">
                       <MahjongTerm term="場風">場風</MahjongTerm>かつ
                       <MahjongTerm term="自風">自風</MahjongTerm>
@@ -266,12 +245,12 @@ export function FuCheatsheetPage() {
 
       {/* 面子符 */}
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">
+        <CardHeader>
+          <CardTitle>
             <MahjongTerm term="面子">面子</MahjongTerm>符
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 sm:px-4 sm:py-6">
           <Table>
             <TableHeader>
               <TableRow>
@@ -286,16 +265,14 @@ export function FuCheatsheetPage() {
               {/* 順子 */}
               <TableRow>
                 <TableCell>
-                  <MahjongTerm term="順子" showRuby>
-                    順子
-                  </MahjongTerm>
+                  <MahjongTerm term="順子">順子</MahjongTerm>
                 </TableCell>
                 <TableCell className="text-muted-foreground">-</TableCell>
                 <TableCell>
                   <div className="flex gap-0.5">
-                    <MahjongTile tile={pin(2)} className="text-2xl" />
-                    <MahjongTile tile={pin(3)} className="text-2xl" />
-                    <MahjongTile tile={pin(4)} className="text-2xl" />
+                    <MahjongTile tile={t.pin_2} size="sm" />
+                    <MahjongTile tile={t.pin_3} size="sm" />
+                    <MahjongTile tile={t.pin_4} size="sm" />
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-bold">0符</TableCell>
@@ -304,20 +281,16 @@ export function FuCheatsheetPage() {
               {/* 刻子 中張牌 */}
               <TableRow>
                 <TableCell rowSpan={2}>
-                  <MahjongTerm term="刻子" showRuby>
-                    刻子
-                  </MahjongTerm>
+                  <MahjongTerm term="刻子">刻子</MahjongTerm>
                 </TableCell>
                 <TableCell>
-                  <MahjongTerm term="中張牌" showRuby>
-                    中張牌
-                  </MahjongTerm>
+                  <MahjongTerm term="中張牌">中張牌</MahjongTerm>
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-0.5">
-                    <MahjongTile tile={sou(5)} className="text-2xl" />
-                    <MahjongTile tile={sou(5)} className="text-2xl" />
-                    <MahjongTile tile={sou(5)} className="text-2xl" />
+                    <MahjongTile tile={t.sou_5} size="sm" />
+                    <MahjongTile tile={t.sou_5} size="sm" />
+                    <MahjongTile tile={t.sou_5} size="sm" />
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-bold">2符</TableCell>
@@ -326,15 +299,13 @@ export function FuCheatsheetPage() {
               {/* 刻子 幺九牌 */}
               <TableRow>
                 <TableCell>
-                  <MahjongTerm term="幺九牌" showRuby>
-                    幺九牌
-                  </MahjongTerm>
+                  <MahjongTerm term="幺九牌">幺九牌</MahjongTerm>
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-0.5">
-                    <MahjongTile tile={man(1)} className="text-2xl" />
-                    <MahjongTile tile={man(1)} className="text-2xl" />
-                    <MahjongTile tile={man(1)} className="text-2xl" />
+                    <MahjongTile tile={t.man_1} size="sm" />
+                    <MahjongTile tile={t.man_1} size="sm" />
+                    <MahjongTile tile={t.man_1} size="sm" />
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-bold">4符</TableCell>
@@ -343,21 +314,17 @@ export function FuCheatsheetPage() {
               {/* 槓子 中張牌 */}
               <TableRow>
                 <TableCell rowSpan={2}>
-                  <MahjongTerm term="槓子" showRuby>
-                    槓子
-                  </MahjongTerm>
+                  <MahjongTerm term="槓子">槓子</MahjongTerm>
                 </TableCell>
                 <TableCell>
-                  <MahjongTerm term="中張牌" showRuby>
-                    中張牌
-                  </MahjongTerm>
+                  <MahjongTerm term="中張牌">中張牌</MahjongTerm>
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-0.5">
-                    <MahjongTile tile={pin(6)} className="text-2xl" />
-                    <MahjongTile tile={pin(6)} className="text-2xl" />
-                    <MahjongTile tile={pin(6)} className="text-2xl" />
-                    <MahjongTile tile={pin(6)} className="text-2xl" />
+                    <MahjongTile tile={t.pin_6} size="sm" />
+                    <MahjongTile tile={t.pin_6} size="sm" />
+                    <MahjongTile tile={t.pin_6} size="sm" />
+                    <MahjongTile tile={t.pin_6} size="sm" />
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-bold">8符</TableCell>
@@ -366,16 +333,14 @@ export function FuCheatsheetPage() {
               {/* 槓子 幺九牌 */}
               <TableRow>
                 <TableCell>
-                  <MahjongTerm term="幺九牌" showRuby>
-                    幺九牌
-                  </MahjongTerm>
+                  <MahjongTerm term="幺九牌">幺九牌</MahjongTerm>
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-0.5">
-                    <MahjongTile tile={honor("green")} className="text-2xl" />
-                    <MahjongTile tile={honor("green")} className="text-2xl" />
-                    <MahjongTile tile={honor("green")} className="text-2xl" />
-                    <MahjongTile tile={honor("green")} className="text-2xl" />
+                    <MahjongTile tile={t.honor_green} size="sm" />
+                    <MahjongTile tile={t.honor_green} size="sm" />
+                    <MahjongTile tile={t.honor_green} size="sm" />
+                    <MahjongTile tile={t.honor_green} size="sm" />
                   </div>
                 </TableCell>
                 <TableCell className="text-right font-bold">16符</TableCell>
@@ -388,14 +353,18 @@ export function FuCheatsheetPage() {
 
       {/* 計算のコツ */}
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">計算のコツ</CardTitle>
+        <CardHeader>
+          <CardTitle>計算のコツ</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>1. まず副底（20符または30符）を確認</p>
           <p>2. ツモなら+2符</p>
           <p>3. 待ちが悪い（嵌張・辺張・単騎）なら+2符</p>
-          <p>4. 役牌雀頭なら+2符（連風牌なら+4符）</p>
+          <p>
+            4. <MahjongTerm term="役牌">役牌</MahjongTerm>
+            <MahjongTerm term="雀頭">雀頭</MahjongTerm>なら+2符（
+            <MahjongTerm term="連風牌">連風牌</MahjongTerm>なら+4符）
+          </p>
           <p>5. 刻子・槓子の符を加算</p>
           <p>6. 合計を10符単位に切り上げ</p>
         </CardContent>

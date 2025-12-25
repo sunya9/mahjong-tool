@@ -4,29 +4,34 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { glossary } from "@/data/glossary";
+import { glossary, type GlossaryEntry } from "@/data/glossary";
 import { cn } from "@/lib/utils";
+import { MarkupText } from "./MarkupText";
+import { useReading } from "@/context/useReading";
 
 interface MahjongTermProps {
   term: string;
   children?: React.ReactNode;
   className?: string;
-  showRuby?: boolean;
+  disablePopup?: boolean;
 }
 
-// 読みが表示テキストと異なるかチェック（同じなら冗長なのでルビ不要）
-function needsRuby(reading: string, displayText: string): boolean {
-  // 読みと表示テキストが同じ場合はルビ不要
-  return reading !== displayText;
+// ルビが必要かチェック
+function needsRuby(entry: GlossaryEntry, displayText: string): boolean {
+  // skipRubyフラグがあればルビ不要
+  if (entry.skipRuby) return false;
+  // 読みと表示テキストが同じ場合もルビ不要
+  return entry.reading !== displayText;
 }
 
 export function MahjongTerm({
   term,
   children,
   className,
-  showRuby = false,
+  disablePopup = false,
 }: MahjongTermProps) {
   const [open, setOpen] = useState(false);
+  const { showReading } = useReading();
   const entry = glossary[term];
 
   // 用語集にない場合はそのまま表示
@@ -38,8 +43,8 @@ export function MahjongTerm({
   const displayText =
     typeof displayContent === "string" ? displayContent : term;
 
-  // ルビを表示するかどうか（showRuby=trueかつ読みが表示テキストと異なる場合）
-  const shouldShowRuby = showRuby && needsRuby(entry.reading, displayText);
+  // ルビを表示するかどうか
+  const shouldShowRuby = showReading && needsRuby(entry, displayText);
 
   // ルビ付きの表示内容
   const rubyContent = shouldShowRuby ? (
@@ -50,6 +55,20 @@ export function MahjongTerm({
   ) : (
     displayContent
   );
+
+  // ポップアップ無効時は下線付きスタイルのみ
+  if (disablePopup) {
+    return (
+      <span
+        className={cn(
+          "underline decoration-muted-foreground/50 decoration-dotted underline-offset-2",
+          className,
+        )}
+      >
+        {rubyContent}
+      </span>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -70,9 +89,10 @@ export function MahjongTerm({
               ({entry.reading})
             </span>
           </div>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {entry.description}
-          </p>
+          <MarkupText
+            text={entry.description}
+            className="text-sm leading-relaxed text-muted-foreground"
+          />
         </div>
       </PopoverContent>
     </Popover>

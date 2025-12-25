@@ -7,7 +7,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { MahjongTerm } from "@/components/mahjong/MahjongTerm";
 import { scoreTable } from "@/data/scoreTable";
 
@@ -110,18 +116,16 @@ function getLimitScores(
 export function ScoreTable({ isDealer, honba = 0 }: ScoreTableProps) {
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">
-          {isDealer ? "親" : "子"}の点数表
-        </CardTitle>
-        <p className="text-xs text-muted-foreground">
+      <CardHeader>
+        <CardTitle>{isDealer ? "親" : "子"}の点数表</CardTitle>
+        <CardDescription>
           上段: ロン / 下段: ツモ
           {isDealer
             ? "（∀ = オール）"
             : "（子/親 = 子2人の支払い / 親の支払い）"}
-        </p>
+        </CardDescription>
       </CardHeader>
-      <CardContent className="p-0 sm:p-6 sm:pt-0">
+      <CardContent>
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -137,52 +141,89 @@ export function ScoreTable({ isDealer, honba = 0 }: ScoreTableProps) {
           </TableHeader>
           <TableBody>
             {/* 1-4翻（符による点数変動あり） */}
-            {hanList.map((han) => (
-              <TableRow key={han}>
-                <TableCell className="bg-muted/30 text-center font-medium">
-                  {han}翻
-                </TableCell>
-                {fuList.map((fu) => {
-                  const score = getScore(fu, han, isDealer, honba);
-                  const entry = scoreTable.find(
-                    (e) => e.fu === fu && e.han === han,
-                  );
-                  const isLimit = entry?.label === "満貫";
-                  const hasScore = score.ron || score.tsumo;
+            {hanList.map((han) => {
+              // 満貫になる最初の符を見つける
+              const limitStartIndex = fuList.findIndex((fu) => {
+                const entry = scoreTable.find(
+                  (e) => e.fu === fu && e.han === han,
+                );
+                return entry?.label === "満貫";
+              });
 
-                  return (
-                    <TableCell
-                      key={fu}
-                      className={cn(
-                        "p-1.5 text-center",
-                        !hasScore && "text-muted-foreground",
-                        isLimit && "bg-primary/5",
-                      )}
-                    >
-                      {hasScore ? (
-                        <div className="flex flex-col gap-0.5">
-                          <div
-                            className={cn(
-                              "tabular-nums",
-                              isLimit && "font-bold text-primary",
+              const hasLimit = limitStartIndex !== -1;
+              const normalFuList = hasLimit
+                ? fuList.slice(0, limitStartIndex)
+                : fuList;
+              const limitColSpan = hasLimit
+                ? fuList.length - limitStartIndex
+                : 0;
+
+              return (
+                <TableRow key={han}>
+                  <TableCell className="bg-muted/30 text-center font-medium">
+                    {han}翻
+                  </TableCell>
+                  {/* 通常の符（満貫以外） */}
+                  {normalFuList.map((fu) => {
+                    const score = getScore(fu, han, isDealer, honba);
+                    const hasScore = score.ron || score.tsumo;
+
+                    return (
+                      <TableCell
+                        key={fu}
+                        className={cn(
+                          "p-1.5 text-center",
+                          !hasScore && "text-muted-foreground",
+                        )}
+                      >
+                        {hasScore ? (
+                          <div className="flex flex-col gap-0.5">
+                            <div className="tabular-nums">{score.ron}</div>
+                            {score.tsumo && (
+                              <div className="text-xs text-muted-foreground tabular-nums">
+                                {score.tsumoDetail}
+                              </div>
                             )}
-                          >
-                            {score.ron}
                           </div>
-                          {score.tsumo && (
-                            <div className="text-xs text-muted-foreground tabular-nums">
-                              {score.tsumoDetail}
-                            </div>
-                          )}
+                        ) : (
+                          "-"
+                        )}
+                      </TableCell>
+                    );
+                  })}
+                  {/* 満貫セル（結合） */}
+                  {hasLimit && (
+                    <TableCell
+                      colSpan={limitColSpan}
+                      className="bg-primary/5 p-1.5 text-center"
+                    >
+                      <div className="flex flex-col gap-0.5">
+                        <div className="font-bold text-primary tabular-nums">
+                          {
+                            getScore(
+                              fuList[limitStartIndex],
+                              han,
+                              isDealer,
+                              honba,
+                            ).ron
+                          }
                         </div>
-                      ) : (
-                        "-"
-                      )}
+                        <div className="text-xs text-muted-foreground tabular-nums">
+                          {
+                            getScore(
+                              fuList[limitStartIndex],
+                              han,
+                              isDealer,
+                              honba,
+                            ).tsumoDetail
+                          }
+                        </div>
+                      </div>
                     </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
+                  )}
+                </TableRow>
+              );
+            })}
 
             {/* 満貫以上（符に関係なく固定点数） */}
             {limitHanList.map(({ han, label, hanDisplay }) => {
@@ -191,24 +232,21 @@ export function ScoreTable({ isDealer, honba = 0 }: ScoreTableProps) {
               return (
                 <TableRow key={han}>
                   <TableCell className="bg-muted/30 text-center font-medium">
-                    {hanDisplay}
+                    <div>{hanDisplay}</div>
+                    <div className="text-muted-foreground">
+                      (<MahjongTerm term={label}>{label}</MahjongTerm>)
+                    </div>
                   </TableCell>
                   <TableCell
                     colSpan={fuList.length}
                     className="bg-primary/5 p-1.5 text-center"
                   >
-                    <div className="flex items-center justify-center gap-4">
-                      <MahjongTerm
-                        term={label}
-                        className="font-bold text-primary"
-                      >
-                        {label}
-                      </MahjongTerm>
-                      <div className="flex items-center gap-2 tabular-nums">
-                        <span className="font-medium">{data.ron}</span>
-                        <span className="text-sm text-muted-foreground">
-                          ({data.tsumoDetail})
-                        </span>
+                    <div className="flex flex-col gap-0.5">
+                      <div className="font-bold text-primary tabular-nums">
+                        {data.ron}
+                      </div>
+                      <div className="text-xs text-muted-foreground tabular-nums">
+                        {data.tsumoDetail}
                       </div>
                     </div>
                   </TableCell>

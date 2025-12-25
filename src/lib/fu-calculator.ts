@@ -196,13 +196,27 @@ const VALID_FU_VALUES = [20, 30, 40, 50, 60, 70, 80, 90, 100, 110];
 
 // 符の選択肢を生成（クイズ用）
 export function generateFuOptions(correctFu: number): number[] {
-  // 正解に近い有効な符を優先的に選択
-  const candidates = VALID_FU_VALUES.filter((fu) => fu !== correctFu).sort(
-    (a, b) => Math.abs(a - correctFu) - Math.abs(b - correctFu),
-  );
+  const higherValues = VALID_FU_VALUES.filter((fu) => fu > correctFu);
+  const lowerValues = VALID_FU_VALUES.filter((fu) => fu < correctFu);
 
-  // 近い順に3つ選択
-  const distractors = candidates.slice(0, 3);
+  let distractors: number[];
+
+  // ランダムに選択パターンを決定
+  const pattern = Math.random();
+
+  if (pattern < 0.25 && higherValues.length >= 3) {
+    // 25%: 正解より大きい値から選択 (例: 40 → [50, 60, 70])
+    distractors = higherValues.slice(0, 3);
+  } else if (pattern < 0.5 && lowerValues.length >= 3) {
+    // 25%: 正解より小さい値から選択 (例: 70 → [40, 50, 60])
+    distractors = lowerValues.slice(-3);
+  } else {
+    // 50%: 正解に近い値から選択（従来の動作）
+    const candidates = VALID_FU_VALUES.filter((fu) => fu !== correctFu).sort(
+      (a, b) => Math.abs(a - correctFu) - Math.abs(b - correctFu),
+    );
+    distractors = candidates.slice(0, 3);
+  }
 
   return [correctFu, ...distractors].sort((a, b) => a - b);
 }

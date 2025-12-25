@@ -2,209 +2,37 @@ import type {
   ScoreQuizCategory,
   ScoreQuizProblem,
   WinType,
-  YakuItem,
   Meld,
   Head,
   Tile,
   WaitType,
   Wind,
-  TileSuit,
-  HonorType,
+  TileNumber,
+  SpecialConditions,
 } from "./mahjong-types";
-import { calculateFu } from "./fu-calculator";
-import { calculateYaku, isYakuman } from "./yaku-calculator";
-import { scoreTable, getScoreForFuHan } from "@/data/scoreTable";
-
-// ランダムユーティリティ
-function randomChoice<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  const result = [...arr];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
+import { isNumberTile } from "./mahjong-types";
+import { resolveYakuFromHand } from "./yaku-resolver";
+import {
+  createTilePool,
+  numberTile,
+  tilesMatch,
+  getAllTileTypes,
+} from "./tile-utils";
+import type { NumberSuit } from "./mahjong-types";
+import {
+  randomChoice,
+  shuffle,
+  generateShuntsu,
+  generateKoutsu,
+  generateKantsu,
+  generateHead,
+  cloneMeld,
+} from "./problem-generator";
+import { scoreTable } from "@/data/scoreTable";
 
 // 問題IDを生成
 function generateId(): string {
   return Math.random().toString(36).substring(2, 9);
-}
-
-// 牌のプール管理
-interface TilePool {
-  tiles: Map<string, number>;
-}
-
-function tileKey(tile: Tile): string {
-  return `${tile.suit}-${tile.value}`;
-}
-
-function createTilePool(): TilePool {
-  const pool = new Map<string, number>();
-  const suits: TileSuit[] = ["man", "pin", "sou"];
-  for (const suit of suits) {
-    for (let i = 1; i <= 9; i++) {
-      pool.set(`${suit}-${i}`, 4);
-    }
-  }
-  const honors: HonorType[] = [
-    "east",
-    "south",
-    "west",
-    "north",
-    "white",
-    "green",
-    "red",
-  ];
-  for (const honor of honors) {
-    pool.set(`honor-${honor}`, 4);
-  }
-  return { tiles: pool };
-}
-
-function canTake(pool: TilePool, tile: Tile, count: number): boolean {
-  const key = tileKey(tile);
-  const available = pool.tiles.get(key) ?? 0;
-  return available >= count;
-}
-
-function takeTiles(pool: TilePool, tile: Tile, count: number): boolean {
-  const key = tileKey(tile);
-  const available = pool.tiles.get(key) ?? 0;
-  if (available < count) return false;
-  pool.tiles.set(key, available - count);
-  return true;
-}
-
-// 面子生成
-function generateShuntsu(
-  pool: TilePool,
-  isOpen: boolean,
-): { meld: Meld; tiles: Tile[] } | null {
-  const suits: TileSuit[] = shuffle(["man", "pin", "sou"]);
-  const startNumbers = shuffle([1, 2, 3, 4, 5, 6, 7]);
-  for (const suit of suits) {
-    for (const start of startNumbers) {
-      const tiles: Tile[] = [
-        { suit, value: start },
-        { suit, value: start + 1 },
-        { suit, value: start + 2 },
-      ];
-      if (tiles.every((t) => canTake(pool, t, 1))) {
-        tiles.forEach((t) => takeTiles(pool, t, 1));
-        return {
-          meld: { type: "shuntsu", tiles, state: isOpen ? "open" : "closed" },
-          tiles,
-        };
-      }
-    }
-  }
-  return null;
-}
-
-function generateKoutsu(
-  pool: TilePool,
-  isOpen: boolean,
-): { meld: Meld; tiles: Tile[] } | null {
-  const allTiles: Tile[] = shuffle([
-    ...Array.from({ length: 9 }, (_, i) => ({
-      suit: "man" as TileSuit,
-      value: i + 1,
-    })),
-    ...Array.from({ length: 9 }, (_, i) => ({
-      suit: "pin" as TileSuit,
-      value: i + 1,
-    })),
-    ...Array.from({ length: 9 }, (_, i) => ({
-      suit: "sou" as TileSuit,
-      value: i + 1,
-    })),
-    ...["east", "south", "west", "north", "white", "green", "red"].map((h) => ({
-      suit: "honor" as TileSuit,
-      value: h as HonorType,
-    })),
-  ]);
-  for (const tile of allTiles) {
-    if (canTake(pool, tile, 3)) {
-      takeTiles(pool, tile, 3);
-      const tiles = [tile, tile, tile];
-      return {
-        meld: { type: "koutsu", tiles, state: isOpen ? "open" : "closed" },
-        tiles,
-      };
-    }
-  }
-  return null;
-}
-
-function generateKantsu(
-  pool: TilePool,
-  isOpen: boolean,
-): { meld: Meld; tiles: Tile[] } | null {
-  const allTiles: Tile[] = shuffle([
-    ...Array.from({ length: 9 }, (_, i) => ({
-      suit: "man" as TileSuit,
-      value: i + 1,
-    })),
-    ...Array.from({ length: 9 }, (_, i) => ({
-      suit: "pin" as TileSuit,
-      value: i + 1,
-    })),
-    ...Array.from({ length: 9 }, (_, i) => ({
-      suit: "sou" as TileSuit,
-      value: i + 1,
-    })),
-    ...["east", "south", "west", "north", "white", "green", "red"].map((h) => ({
-      suit: "honor" as TileSuit,
-      value: h as HonorType,
-    })),
-  ]);
-  for (const tile of allTiles) {
-    if (canTake(pool, tile, 4)) {
-      takeTiles(pool, tile, 4);
-      const tiles = [tile, tile, tile, tile];
-      return {
-        meld: { type: "kantsu", tiles, state: isOpen ? "open" : "closed" },
-        tiles,
-      };
-    }
-  }
-  return null;
-}
-
-function generateHead(pool: TilePool): { head: Head; tiles: Tile[] } | null {
-  const allTiles: Tile[] = shuffle([
-    ...Array.from({ length: 9 }, (_, i) => ({
-      suit: "man" as TileSuit,
-      value: i + 1,
-    })),
-    ...Array.from({ length: 9 }, (_, i) => ({
-      suit: "pin" as TileSuit,
-      value: i + 1,
-    })),
-    ...Array.from({ length: 9 }, (_, i) => ({
-      suit: "sou" as TileSuit,
-      value: i + 1,
-    })),
-    ...["east", "south", "west", "north", "white", "green", "red"].map((h) => ({
-      suit: "honor" as TileSuit,
-      value: h as HonorType,
-    })),
-  ]);
-  for (const tile of allTiles) {
-    if (canTake(pool, tile, 2)) {
-      takeTiles(pool, tile, 2);
-      return {
-        head: { tiles: [tile, tile] },
-        tiles: [tile, tile],
-      };
-    }
-  }
-  return null;
 }
 
 // 待ち設定
@@ -243,7 +71,7 @@ function tryConfigureWait(
   waitType: WaitType,
   winType: WinType,
 ): WaitConfig | null {
-  const modifiedMelds = melds.map((m) => ({ ...m, tiles: [...m.tiles] }));
+  const modifiedMelds = melds.map(cloneMeld);
   let modifiedHead: Head = { tiles: [...head.tiles] };
 
   switch (waitType) {
@@ -254,12 +82,13 @@ function tryConfigureWait(
       if (shuntsuIndices.length === 0) return null;
       const idx = randomChoice(shuntsuIndices);
       const meld = modifiedMelds[idx];
-      const startValue = meld.tiles[0].value as number;
-      if (startValue >= 2 && startValue <= 6) {
+      const firstTile = meld.tiles[0];
+      if (!isNumberTile(firstTile)) return null;
+      if (firstTile.value >= 2 && firstTile.value <= 6) {
         const isLow = Math.random() < 0.5;
         const winTile = isLow
-          ? { suit: meld.tiles[0].suit, value: startValue }
-          : { suit: meld.tiles[0].suit, value: startValue + 3 };
+          ? numberTile(firstTile.suit, firstTile.value)
+          : numberTile(firstTile.suit, (firstTile.value + 3) as TileNumber);
         return {
           waitType,
           winTile,
@@ -277,10 +106,12 @@ function tryConfigureWait(
       if (shuntsuIndices.length === 0) return null;
       const idx = randomChoice(shuntsuIndices);
       const meld = modifiedMelds[idx];
-      const winTile = {
-        suit: meld.tiles[0].suit,
-        value: (meld.tiles[0].value as number) + 1,
-      };
+      const firstTile = meld.tiles[0];
+      if (!isNumberTile(firstTile)) return null;
+      const winTile = numberTile(
+        firstTile.suit,
+        (firstTile.value + 1) as TileNumber,
+      );
       return {
         waitType,
         winTile,
@@ -293,18 +124,20 @@ function tryConfigureWait(
       const shuntsuIndices = modifiedMelds
         .map((m, i) => {
           if (m.type !== "shuntsu") return -1;
-          const start = m.tiles[0].value as number;
-          return start === 1 || start === 7 ? i : -1;
+          const firstTile = m.tiles[0];
+          if (!isNumberTile(firstTile)) return -1;
+          return firstTile.value === 1 || firstTile.value === 7 ? i : -1;
         })
         .filter((i) => i !== -1);
       if (shuntsuIndices.length === 0) return null;
       const idx = randomChoice(shuntsuIndices);
       const meld = modifiedMelds[idx];
-      const start = meld.tiles[0].value as number;
+      const firstTile = meld.tiles[0];
+      if (!isNumberTile(firstTile)) return null;
       const winTile =
-        start === 1
-          ? { suit: meld.tiles[0].suit, value: 3 }
-          : { suit: meld.tiles[0].suit, value: 7 };
+        firstTile.value === 1
+          ? numberTile(firstTile.suit, 3)
+          : numberTile(firstTile.suit, 7);
       return {
         waitType,
         winTile,
@@ -344,7 +177,6 @@ function tryConfigureWait(
       };
     }
   }
-  return null;
 }
 
 // カテゴリに基づいて条件を決定
@@ -369,6 +201,166 @@ function getConditionsForCategory(category: ScoreQuizCategory | "all"): {
         winType: randomChoice(["tsumo", "ron"]),
       };
   }
+}
+
+// melds/head から closedTiles/openMelds への変換
+function convertToResolverInput(
+  melds: Meld[],
+  head: Head,
+  winTile: Tile,
+): { closedTiles: Tile[]; openMelds: Meld[] } {
+  const closedTiles: Tile[] = [];
+  const openMelds: Meld[] = [];
+
+  for (const meld of melds) {
+    if (meld.state === "open") {
+      // 明刻・明槓・チー
+      openMelds.push(meld);
+    } else if (meld.type === "kantsu") {
+      // 暗槓は公開されるので openMelds に追加
+      openMelds.push(meld);
+    } else {
+      // 暗刻・暗順
+      closedTiles.push(...meld.tiles);
+    }
+  }
+
+  // 雀頭を追加
+  closedTiles.push(...head.tiles);
+
+  // parseHand は closedTiles + winTile として解析するので、
+  // winTile を1枚取り除く必要がある
+  const winTileIndex = closedTiles.findIndex((t) => tilesMatch(t, winTile));
+  if (winTileIndex >= 0) {
+    closedTiles.splice(winTileIndex, 1);
+  }
+
+  return { closedTiles, openMelds };
+}
+
+// ========================================
+// ドラ生成
+// ========================================
+
+/**
+ * ドラ表示牌を生成
+ * @param kantsuCount 槓子の数（槓ドラ用）
+ */
+function generateDoraIndicators(kantsuCount: number): Tile[] {
+  const allTileTypes = getAllTileTypes();
+  const indicators: Tile[] = [];
+
+  // 基本ドラ1枚 + 槓ドラ（槓子の数だけ）
+  const doraCount = 1 + kantsuCount;
+
+  for (let i = 0; i < doraCount; i++) {
+    const shuffled = shuffle([...allTileTypes]);
+    indicators.push(shuffled[0]);
+  }
+
+  return indicators;
+}
+
+/**
+ * 裏ドラ表示牌を生成（リーチ時のみ）
+ * @param doraCount 表ドラの数と同数
+ */
+function generateUraDoraIndicators(doraCount: number): Tile[] {
+  const allTileTypes = getAllTileTypes();
+  const indicators: Tile[] = [];
+
+  for (let i = 0; i < doraCount; i++) {
+    const shuffled = shuffle([...allTileTypes]);
+    indicators.push(shuffled[0]);
+  }
+
+  return indicators;
+}
+
+/**
+ * 手牌に赤ドラを適用
+ * - 各色の5が含まれている場合、1枚を赤ドラに変換
+ * - 同じ牌が5枚以上にならないよう注意
+ */
+function applyRedDora(
+  melds: Meld[],
+  head: Head,
+  winTile: Tile,
+): { melds: Meld[]; head: Head; winTile: Tile } {
+  const suits: NumberSuit[] = ["man", "pin", "sou"];
+
+  // 各色の5の使用枚数をカウント
+  const fiveCount: Record<NumberSuit, number> = { man: 0, pin: 0, sou: 0 };
+  const hasRedDora: Record<NumberSuit, boolean> = {
+    man: false,
+    pin: false,
+    sou: false,
+  };
+
+  const countFives = (tile: Tile) => {
+    if (isNumberTile(tile) && tile.value === 5) {
+      fiveCount[tile.suit]++;
+      if (tile.isRedDora) {
+        hasRedDora[tile.suit] = true;
+      }
+    }
+  };
+
+  for (const meld of melds) {
+    for (const tile of meld.tiles) {
+      countFives(tile);
+    }
+  }
+  for (const tile of head.tiles) {
+    countFives(tile);
+  }
+  countFives(winTile);
+
+  // 各色について、5が含まれていて、まだ赤ドラがなく、4枚以下なら1枚を赤ドラに
+  const suitsToConvert = suits.filter(
+    (suit) => fiveCount[suit] > 0 && !hasRedDora[suit] && fiveCount[suit] <= 4,
+  );
+
+  if (suitsToConvert.length === 0) {
+    return { melds, head, winTile };
+  }
+
+  // 変換対象の色をランダムに選択（手牌に含まれる5のうち1色を赤ドラに）
+  const shuffledSuits = shuffle([...suitsToConvert]);
+  const convertedSuits = new Set<NumberSuit>();
+
+  const convertTile = (tile: Tile): Tile => {
+    if (
+      isNumberTile(tile) &&
+      tile.value === 5 &&
+      shuffledSuits.includes(tile.suit) &&
+      !convertedSuits.has(tile.suit) &&
+      !tile.isRedDora
+    ) {
+      convertedSuits.add(tile.suit);
+      return numberTile(tile.suit, 5, true);
+    }
+    return tile;
+  };
+
+  const newMelds = melds.map((meld) => {
+    const newTiles = meld.tiles.map(convertTile);
+    if (meld.type === "shuntsu") {
+      return { ...meld, tiles: newTiles as [Tile, Tile, Tile] };
+    } else if (meld.type === "koutsu") {
+      return { ...meld, tiles: newTiles as [Tile, Tile, Tile] };
+    } else {
+      return { ...meld, tiles: newTiles as [Tile, Tile, Tile, Tile] };
+    }
+  }) as Meld[];
+
+  const newHead: Head = {
+    tiles: head.tiles.map(convertTile) as [Tile, Tile],
+  };
+
+  const newWinTile = convertTile(winTile);
+
+  return { melds: newMelds, head: newHead, winTile: newWinTile };
 }
 
 // ランダムな問題を生成
@@ -426,6 +418,21 @@ export function generateScoreQuizProblem(
 
     const isMenzen = !hasActualOpen;
 
+    // リーチの有無を決定（門前の場合のみ）
+    let isRiichi = false;
+    let isDoubleRiichi = false;
+    if (isMenzen) {
+      const riichiRand = Math.random();
+      if (riichiRand < 0.01) {
+        // 1%でダブルリーチ
+        isDoubleRiichi = true;
+        isRiichi = true;
+      } else if (riichiRand < 0.4) {
+        // 39%でリーチ（合計40%）
+        isRiichi = true;
+      }
+    }
+
     // 雀頭を生成
     const headResult = generateHead(pool);
     if (!headResult) continue;
@@ -437,6 +444,27 @@ export function generateScoreQuizProblem(
     const waitConfig = configureWait(melds, headResult.head, winType);
     if (!waitConfig) continue;
 
+    // 赤ドラを適用
+    const redDoraResult = applyRedDora(
+      waitConfig.modifiedMelds,
+      waitConfig.modifiedHead,
+      waitConfig.winTile,
+    );
+    const finalMelds = redDoraResult.melds;
+    const finalHead = redDoraResult.head;
+    const finalWinTile = redDoraResult.winTile;
+
+    // 槓子をカウント
+    const kantsuCount = finalMelds.filter((m) => m.type === "kantsu").length;
+
+    // ドラ表示牌を生成
+    const doraIndicators = generateDoraIndicators(kantsuCount);
+
+    // 裏ドラ（リーチ時のみ）
+    const uraDoraIndicators = isRiichi
+      ? generateUraDoraIndicators(doraIndicators.length)
+      : undefined;
+
     // 場風・自風を決定
     const roundWinds: Wind[] = ["east", "south"];
     const seatWinds: Wind[] = ["east", "south", "west", "north"];
@@ -446,73 +474,64 @@ export function generateScoreQuizProblem(
       ? "east"
       : randomChoice(seatWinds.filter((w) => w !== "east"));
 
-    // 役満チェック（除外）
-    if (
-      isYakuman(
-        waitConfig.modifiedMelds,
-        waitConfig.modifiedHead,
-        winType,
-        isMenzen,
-      )
-    ) {
-      continue;
-    }
-
-    // 役を計算
-    const yakuResult = calculateYaku(
-      waitConfig.modifiedMelds,
-      waitConfig.modifiedHead,
-      waitConfig.waitType,
-      winType,
-      roundWind,
-      seatWind,
-      isMenzen,
+    // melds/head を closedTiles/openMelds に変換
+    const { closedTiles, openMelds } = convertToResolverInput(
+      finalMelds,
+      finalHead,
+      finalWinTile,
     );
 
-    // 役無しは除外
-    if (yakuResult.totalHan === 0) continue;
+    // 特殊条件を設定（ドラ情報を含む）
+    const specialConditions: SpecialConditions = {
+      isRiichi,
+      isDoubleRiichi,
+      doraIndicators,
+      uraDoraIndicators,
+    };
 
-    // 符を計算
-    const fuResult = calculateFu({
-      melds: waitConfig.modifiedMelds,
-      head: waitConfig.modifiedHead,
-      waitType: waitConfig.waitType,
+    // 役判定
+    const result = resolveYakuFromHand(
+      closedTiles,
+      openMelds,
+      finalWinTile,
       winType,
       roundWind,
       seatWind,
-      isMenzen,
-    });
+      specialConditions,
+    );
+
+    // エラーまたは役無しは除外
+    if (!result || result.han === 0) continue;
+
+    // ドラ以外の役がない場合は除外（ドラだけでは和了できない）
+    const doraNames = ["ドラ", "裏ドラ", "赤ドラ"];
+    const nonDoraYaku = result.yaku.filter((y) => !doraNames.includes(y.name));
+    if (nonDoraYaku.length === 0) continue;
+
+    // 役満は除外
+    if (result.han >= 13) continue;
 
     // 点数を取得
-    const scoreEntry = getScoreForFuHan(fuResult.total, yakuResult.totalHan);
-    if (!scoreEntry) continue;
-
     let correctScore: number;
     let correctScoreDealer: number | undefined;
 
     if (isDealer) {
-      correctScore =
-        winType === "tsumo" ? scoreEntry.dealer.tsumo : scoreEntry.dealer.ron;
+      // 親の場合、scoreはロン時の合計、ツモ時は子の支払い
+      correctScore = result.score;
     } else {
       if (winType === "tsumo") {
-        correctScore = scoreEntry.nonDealer.tsumoNonDealer;
-        correctScoreDealer = scoreEntry.nonDealer.tsumoDealer;
+        correctScore = result.score;
+        correctScoreDealer = result.scoreDealer;
       } else {
-        correctScore = scoreEntry.nonDealer.ron;
+        correctScore = result.score;
       }
     }
 
-    // 役をYakuItem形式に変換
-    const yakuItems: YakuItem[] = yakuResult.yaku.map((y) => ({
-      name: y.name,
-      han: isMenzen ? y.han : (y.hanOpen ?? y.han),
-    }));
-
     return {
       id: generateId(),
-      melds: waitConfig.modifiedMelds,
-      head: waitConfig.modifiedHead,
-      winTile: waitConfig.winTile,
+      melds: finalMelds,
+      head: finalHead,
+      winTile: finalWinTile,
       waitType: waitConfig.waitType,
       waitMeldIndex: waitConfig.waitMeldIndex,
       waitFromHead: waitConfig.waitFromHead,
@@ -521,13 +540,17 @@ export function generateScoreQuizProblem(
       seatWind,
       isDealer,
       isMenzen,
-      fu: fuResult.total,
-      han: yakuResult.totalHan,
-      yaku: yakuItems,
+      isRiichi,
+      isDoubleRiichi,
+      doraIndicators,
+      uraDoraIndicators,
+      fu: result.fu,
+      han: result.han,
+      yaku: result.yaku,
       correctScore,
       correctScoreDealer,
       category: category === "all" ? "mixed" : category,
-      label: scoreEntry.label,
+      label: result.label,
     };
   }
 
