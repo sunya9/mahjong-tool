@@ -6,8 +6,8 @@ export function Head() {
         name="description"
         content="麻雀の符計算・点数計算方法を確認、学べるサイト"
       />
-      <link rel="icon" href="/favicon.ico" sizes="any" />
-      <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+      <link rel="icon" href="/mahjong-tool/favicon.ico" sizes="any" />
+      <link rel="icon" href="/mahjong-tool/favicon.svg" type="image/svg+xml" />
       <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
     </>
   );

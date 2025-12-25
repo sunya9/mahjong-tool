@@ -40,7 +40,7 @@ export default function Page() {
             <Item
               key={key}
               variant="outline"
-              render={<a href={`/score-quiz/${key}`} />}
+              render={<a href={createUrl(`/score-quiz/${key}`)} />}
               className="cursor-pointer hover:bg-muted/50"
             >
               <ItemContent>

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/item";
 import { Switch } from "@/components/ui/switch";
 import { useReading } from "@/context/useReading";
+import { createUrl } from "@/lib/utils";
 import { Calculator, BookOpen, ChevronRight, Hash, Table } from "lucide-react";
 
 const menuItems = [
@@ -80,7 +81,7 @@ export default function Page() {
               <Item
                 key={item.href}
                 variant="outline"
-                render={<a href={item.href} />}
+                render={<a href={createUrl(item.href)} />}
               >
                 <ItemMedia variant="icon">
                   <item.icon className="size-10 rounded bg-muted p-3" />
