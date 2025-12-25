@@ -1,5 +1,13 @@
 import { Contents } from "@/components/layout/Contents";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Item,
   ItemContent,
@@ -66,26 +74,54 @@ export default function Page() {
           </label>
         </div>
 
-        <ItemGroup className="mx-auto sm:mx-auto sm:max-w-xl">
-          {menuItems.map((item) => (
-            <Item
-              key={item.href}
-              variant="outline"
-              render={<a href={item.href} />}
-            >
-              <ItemMedia variant="icon">
-                <item.icon className="size-10 rounded bg-muted p-3" />
-              </ItemMedia>
-              <ItemContent>
-                <ItemTitle>{item.title}</ItemTitle>
-                <ItemDescription>{item.description}</ItemDescription>
-              </ItemContent>
-              <ItemContent>
-                <ChevronRight />
-              </ItemContent>
-            </Item>
-          ))}
-        </ItemGroup>
+        <div className="mx-auto space-y-8 sm:mx-auto sm:max-w-xl">
+          <ItemGroup>
+            {menuItems.map((item) => (
+              <Item
+                key={item.href}
+                variant="outline"
+                render={<a href={item.href} />}
+              >
+                <ItemMedia variant="icon">
+                  <item.icon className="size-10 rounded bg-muted p-3" />
+                </ItemMedia>
+                <ItemContent>
+                  <ItemTitle>{item.title}</ItemTitle>
+                  <ItemDescription>{item.description}</ItemDescription>
+                </ItemContent>
+                <ItemContent>
+                  <ChevronRight />
+                </ItemContent>
+              </Item>
+            ))}
+          </ItemGroup>
+          <Card>
+            <CardHeader>
+              <CardTitle>このサイトについて</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>
+                このサイトは麻雀の符計算・点数計算を
+                <a
+                  className="text-primary underline-offset-4 hover:underline"
+                  href="https://x.com/ephemeralMocha"
+                >
+                  @ephemeralMocha
+                </a>
+                自身が学ぶために作成したクイズサイトです。
+              </p>
+              <p>なにか間違い等見つけたらご連絡ください。</p>
+            </CardContent>
+            <CardFooter>
+              <Button
+                render={<a href="https://github.com/sunya9/mahjong-tool" />}
+                variant="link"
+              >
+                GitHub
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
       </Contents>
     </>
   );
