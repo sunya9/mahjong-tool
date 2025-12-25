@@ -253,7 +253,7 @@ export function ScoreQuizCard({
                   )}
                 />
               </CollapsibleTrigger>
-              <CollapsibleContent className="overflow-hidden rounded-lg border border-t-0 p-4 data-[ending-style]:animate-out data-[ending-style]:fade-out-0 data-[starting-style]:animate-in data-[starting-style]:fade-in-0">
+              <CollapsibleContent className="overflow-hidden rounded-lg border border-t-0 p-4 data-ending-style:animate-out data-ending-style:fade-out-0 data-starting-style:animate-in data-starting-style:fade-in-0">
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium">
                     <MahjongTerm term="役">役</MahjongTerm>の内訳
