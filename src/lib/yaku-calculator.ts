@@ -80,7 +80,7 @@ function isWindYaku(tile: Tile, roundWind: Wind, seatWind: Wind): boolean {
 }
 
 // 役を計算
-export function calculateYaku(
+function calculateYaku(
   melds: Meld[],
   head: Head,
   waitType: WaitType,
@@ -329,47 +329,6 @@ function getWindName(wind: Wind): string {
   return names[wind];
 }
 
-// 役満判定（除外用）
-export function isYakuman(
-  melds: Meld[],
-  head: Head,
-  _winType: WinType,
-  isMenzen: boolean,
-): boolean {
-  const allTiles = getAllTiles(melds, head);
-
-  // 四暗刻
-  if (isMenzen) {
-    const closedTriplets = countClosedTriplets(melds);
-    if (closedTriplets === 4) return true;
-  }
-
-  // 大三元
-  const dragonTriplets = melds.filter(
-    (m) =>
-      (m.type === "koutsu" || m.type === "kantsu") && isDragonTile(m.tiles[0]),
-  );
-  if (dragonTriplets.length === 3) return true;
-
-  // 字一色
-  const isTsuuiisou = allTiles.every((t) => t.suit === "honor");
-  if (isTsuuiisou) return true;
-
-  // 清老頭
-  const isChinroutou = allTiles.every((t) => isTerminal(t));
-  if (isChinroutou) return true;
-
-  // 緑一色
-  const isRyuuiisou = allTiles.every((t) => isGreenTile(t));
-  if (isRyuuiisou) return true;
-
-  // 四槓子
-  const kantsuCount = countKantsu(melds);
-  if (kantsuCount === 4) return true;
-
-  return false;
-}
-
 // ========================================
 // 特殊条件による役
 // ========================================
@@ -377,7 +336,7 @@ export function isYakuman(
 /**
  * 特殊条件から成立する役を取得
  */
-export function getSpecialConditionYaku(
+function getSpecialConditionYaku(
   conditions: SpecialConditions | undefined,
   winType: WinType,
 ): YakuInfo[] {
@@ -551,7 +510,7 @@ export function calculateKokushiYaku(
 /**
  * 通常形の役満を計算（役満がある場合のみ結果を返す）
  */
-export function calculateRegularYakuman(
+function calculateRegularYakuman(
   melds: Meld[],
   head: Head,
   isMenzen: boolean,
@@ -761,7 +720,7 @@ const nextDragonOrder: Record<DragonType, DragonType> = {
  * - 風牌: 東→南→西→北→東
  * - 三元牌: 白→發→中→白
  */
-export function getDoraFromIndicator(indicator: Tile): Tile {
+function getDoraFromIndicator(indicator: Tile): Tile {
   if (indicator.suit === "honor") {
     if (
       indicator.value === "east" ||
@@ -788,7 +747,7 @@ export function getDoraFromIndicator(indicator: Tile): Tile {
 /**
  * 手牌のドラ枚数をカウント（表ドラ・裏ドラ用、赤ドラは含まない）
  */
-export function countDora(allTiles: Tile[], doraIndicators: Tile[]): number {
+function countDora(allTiles: Tile[], doraIndicators: Tile[]): number {
   let count = 0;
   const doraTiles = doraIndicators.map(getDoraFromIndicator);
 
@@ -806,7 +765,7 @@ export function countDora(allTiles: Tile[], doraIndicators: Tile[]): number {
 /**
  * 赤ドラの枚数をカウント
  */
-export function countRedDora(allTiles: Tile[]): number {
+function countRedDora(allTiles: Tile[]): number {
   return allTiles.filter(
     (t) => t.suit !== "honor" && "isRedDora" in t && t.isRedDora,
   ).length;
@@ -815,7 +774,7 @@ export function countRedDora(allTiles: Tile[]): number {
 /**
  * ドラを役として返す
  */
-export function getDoraYaku(
+function getDoraYaku(
   allTiles: Tile[],
   conditions: SpecialConditions | undefined,
   isRiichi: boolean,

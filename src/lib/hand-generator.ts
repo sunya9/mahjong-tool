@@ -14,7 +14,6 @@ import { isNumberTile, isHonorTile } from "./mahjong-types";
 import { calculateFu } from "./fu-calculator";
 import { createTilePool, tilesMatch } from "./tile-utils";
 import {
-  setGlobalSeed,
   randomChoice,
   shuffle,
   generateShuntsu,
@@ -765,18 +764,4 @@ export function generateProblemForCategory(
   }
 
   return null;
-}
-
-// シード付きで問題生成（同じシードなら同じ問題が生成される）
-export function generateProblemWithSeed(
-  seed: number,
-  category: "wait" | "meld" | "head" | "mixed" | "all" = "mixed",
-): QuizProblem | null {
-  setGlobalSeed(seed);
-  return generateProblemForCategory(category);
-}
-
-// 新しいシードを生成
-export function generateSeed(): number {
-  return Math.floor(Math.random() * 0x7fffffff);
 }

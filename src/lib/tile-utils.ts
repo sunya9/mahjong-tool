@@ -24,7 +24,7 @@ export function numberTile(
   return { suit, value, isRedDora };
 }
 
-export function honorTile(value: HonorType): HonorTile {
+function honorTile(value: HonorType): HonorTile {
   return { suit: "honor", value };
 }
 
@@ -32,7 +32,7 @@ export function honorTile(value: HonorType): HonorTile {
 // 牌識別
 // ========================================
 
-export function tileKey(tile: Tile): string {
+function tileKey(tile: Tile): string {
   return `${tile.suit}-${tile.value}`;
 }
 

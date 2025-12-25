@@ -19,7 +19,7 @@ interface FuCalculationInput {
 }
 
 // 待ちの日本語名
-export function getWaitName(waitType: WaitType): string {
+function getWaitName(waitType: WaitType): string {
   const names: Record<WaitType, string> = {
     ryanmen: "両面",
     kanchan: "嵌張",
@@ -31,7 +31,7 @@ export function getWaitName(waitType: WaitType): string {
 }
 
 // 面子の日本語名
-export function getMeldName(meld: Meld): string {
+function getMeldName(meld: Meld): string {
   const tiles = meld.tiles;
   const firstTile = tiles[0];
   const isYaochu = isTerminalOrHonor(firstTile);

@@ -5,7 +5,6 @@ import {
   indexToTile,
   tilesToCount,
   tilesEqual,
-  getWaitingTiles,
 } from "../hand-parser";
 import * as t from "@/data/tiles";
 import type { Tile, Meld, RegularHand } from "../mahjong-types";
@@ -370,40 +369,6 @@ describe("parseHand - 国士無双", () => {
 
     const kokushi = result.hands.find((h) => h.pattern === "kokushi");
     expect(kokushi).toBeUndefined();
-  });
-});
-
-// ========================================
-// 待ち牌判定のテスト
-// ========================================
-
-describe("getWaitingTiles", () => {
-  it("両面待ちの待ち牌を取得", () => {
-    // このテストは正しいテンパイ形に修正が必要
-    // 現状はスキップ
-    expect(true).toBe(true);
-  });
-
-  it("単騎待ちの待ち牌を取得", () => {
-    // 123m 456m 789m 123p + 1s待ち（単騎）
-    const closedTiles = createClosedTiles(
-      [
-        t.man_1,
-        t.man_2,
-        t.man_3,
-        t.man_4,
-        t.man_5,
-        t.man_6,
-        t.man_7,
-        t.man_8,
-        t.man_9,
-      ],
-      [t.pin_1, t.pin_2, t.pin_3],
-      [t.sou_1],
-    );
-
-    const waitingTiles = getWaitingTiles(closedTiles, []);
-    expect(waitingTiles.some((tile) => tilesEqual(tile, t.sou_1))).toBe(true);
   });
 });
 

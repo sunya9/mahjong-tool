@@ -48,15 +48,11 @@ export class SeededRandom {
 // グローバルな乱数生成器（シードなしの場合に使用）
 let globalRng: SeededRandom | null = null;
 
-export function getRng(): SeededRandom {
+function getRng(): SeededRandom {
   if (!globalRng) {
     globalRng = new SeededRandom(Date.now());
   }
   return globalRng;
-}
-
-export function setGlobalSeed(seed: number): void {
-  globalRng = new SeededRandom(seed);
 }
 
 // ========================================

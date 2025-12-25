@@ -209,50 +209,6 @@ export function isDragonTile(
   );
 }
 
-// 面子の型ガード
-
-export function isShuntsu(meld: Meld): meld is ShuntsuMeld {
-  return meld.type === "shuntsu";
-}
-
-export function isKoutsu(meld: Meld): meld is KoutsuMeld {
-  return meld.type === "koutsu";
-}
-
-export function isKantsu(meld: Meld): meld is KantsuMeld {
-  return meld.type === "kantsu";
-}
-
-// 面子作成ヘルパー
-
-export function shuntsu(
-  t1: NumberTile,
-  t2: NumberTile,
-  t3: NumberTile,
-  state: MeldState = "closed",
-): ShuntsuMeld {
-  return { type: "shuntsu", tiles: [t1, t2, t3], state };
-}
-
-export function koutsu(
-  t1: Tile,
-  t2: Tile,
-  t3: Tile,
-  state: MeldState = "closed",
-): KoutsuMeld {
-  return { type: "koutsu", tiles: [t1, t2, t3], state };
-}
-
-export function kantsu(
-  t1: Tile,
-  t2: Tile,
-  t3: Tile,
-  t4: Tile,
-  state: MeldState = "closed",
-): KantsuMeld {
-  return { type: "kantsu", tiles: [t1, t2, t3, t4], state };
-}
-
 // ヘルパー関数
 
 export function isTerminal(tile: Tile): boolean {
@@ -295,11 +251,6 @@ export function isDoubleYakuhai(
 // ========================================
 // 役判定アルゴリズム用の型定義
 // ========================================
-
-/**
- * 和了形パターンの種別
- */
-export type HandPattern = "regular" | "chiitoitsu" | "kokushi";
 
 /**
  * 通常形の和了

@@ -125,19 +125,6 @@ export function tilesToCount(tiles: Tile[]): TileCount {
 }
 
 /**
- * 枚数配列を牌リストに変換
- */
-export function countToTiles(count: TileCount): Tile[] {
-  const tiles: Tile[] = [];
-  for (let i = 0; i < 34; i++) {
-    for (let j = 0; j < count[i]; j++) {
-      tiles.push(indexToTile(i));
-    }
-  }
-  return tiles;
-}
-
-/**
  * 2つの牌が同じかどうかを判定（赤ドラは無視）
  */
 export function tilesEqual(a: Tile, b: Tile): boolean {
@@ -469,50 +456,4 @@ export function parseHand(input: HandParseInput): ParseResult {
     hands,
     isWinning: hands.length > 0,
   };
-}
-
-/**
- * 手牌が和了形かどうかを判定
- */
-export function isWinningHand(closedTiles: Tile[], openMelds: Meld[]): boolean {
-  // テンパイ状態（13枚）から全ての待ち牌を試す
-  if (closedTiles.length === 13 - openMelds.length * 3) {
-    const waitingTiles = getWaitingTiles(closedTiles, openMelds);
-    return waitingTiles.length > 0;
-  }
-
-  // 和了状態（14枚）
-  // ダミーの和了牌として最後の牌を使用
-  const winTile = closedTiles[closedTiles.length - 1];
-  const result = parseHand({
-    closedTiles: closedTiles.slice(0, -1),
-    openMelds,
-    winTile,
-  });
-  return result.isWinning;
-}
-
-/**
- * テンパイ形から待ち牌リストを返す
- */
-export function getWaitingTiles(
-  closedTiles: Tile[],
-  openMelds: Meld[],
-): Tile[] {
-  const waitingTiles: Tile[] = [];
-
-  // 全34種の牌を試す
-  for (let i = 0; i < 34; i++) {
-    const winTile = indexToTile(i);
-    const result = parseHand({
-      closedTiles,
-      openMelds,
-      winTile,
-    });
-    if (result.isWinning) {
-      waitingTiles.push(winTile);
-    }
-  }
-
-  return waitingTiles;
 }

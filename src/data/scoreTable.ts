@@ -264,30 +264,3 @@ export const scoreTable: ScoreEntry[] = [
     label: "役満",
   },
 ];
-
-// 翻数ごとの点数を取得
-export function getScoresForHan(han: number): ScoreEntry[] {
-  return scoreTable.filter((entry) => entry.han === han);
-}
-
-// 符と翻から点数を取得
-export function getScoreForFuHan(
-  fu: number,
-  han: number,
-): ScoreEntry | undefined {
-  // 満貫以上は符に関係なく同じ点数
-  if (han >= 5) {
-    return scoreTable.find((entry) => entry.han === han);
-  }
-  return scoreTable.find((entry) => entry.fu === fu && entry.han === han);
-}
-
-// 限定役の判定用
-export function getLimitLabel(han: number): string | undefined {
-  if (han >= 13) return "役満";
-  if (han >= 11) return "三倍満";
-  if (han >= 8) return "倍満";
-  if (han >= 6) return "跳満";
-  if (han >= 5) return "満貫";
-  return undefined;
-}

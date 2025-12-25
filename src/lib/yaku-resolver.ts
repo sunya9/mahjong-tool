@@ -316,7 +316,7 @@ function calculateKokushiResult(
 /**
  * 全パターンから最高得点を選択して役判定結果を返す
  */
-export function resolveYaku(input: YakuResolveInput): YakuResolveResult | null {
+function resolveYaku(input: YakuResolveInput): YakuResolveResult | null {
   const {
     parseResult,
     winTile,
