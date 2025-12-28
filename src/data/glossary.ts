@@ -12,7 +12,7 @@ export const glossary: Record<string, GlossaryEntry> = {
     term: "符",
     reading: "ふ",
     description:
-      "手牌の構成や和了の形によって決まる点数計算の基本単位。{副底}20符に各種加符点を加算して計算する。",
+      "手牌の構成や{和了}の形によって決まる点数計算の基本単位。{副底}20符に各種加符点を加算して計算する。",
     category: "scoring",
     skipRuby: true,
   },
@@ -25,7 +25,7 @@ export const glossary: Record<string, GlossaryEntry> = {
   副底: {
     term: "副底",
     reading: "フーテイ",
-    description: "和了時に必ず加算される基本符。通常20符。",
+    description: "{和了}時に必ず加算される基本符。通常20符。",
     category: "scoring",
   },
 
@@ -33,7 +33,7 @@ export const glossary: Record<string, GlossaryEntry> = {
   面子: {
     term: "面子",
     reading: "メンツ",
-    description: "3枚1組の牌の組み合わせ。{順子}・{刻子}・{槓子}の総称。",
+    description: "3枚1組の{牌}の組み合わせ。{順子}・{刻子}・{槓子}の総称。",
     category: "hand",
   },
   順子: {
@@ -46,13 +46,13 @@ export const glossary: Record<string, GlossaryEntry> = {
   刻子: {
     term: "刻子",
     reading: "コーツ",
-    description: "同じ牌3枚の組み合わせ。{暗刻}と{明刻}で{符}が異なる。",
+    description: "同じ{牌}3枚の組み合わせ。{暗刻}と{明刻}で{符}が異なる。",
     category: "hand",
   },
   槓子: {
     term: "槓子",
     reading: "カンツ",
-    description: "同じ牌4枚の組み合わせ。{刻子}より高い{符}がつく。",
+    description: "同じ{牌}4枚の組み合わせ。{刻子}より高い{符}がつく。",
     category: "hand",
   },
   暗刻: {
@@ -76,29 +76,35 @@ export const glossary: Record<string, GlossaryEntry> = {
   明槓: {
     term: "明槓",
     reading: "ミンカン",
-    description: "ポンした牌に1枚加える加槓、または他家の捨て牌で行う大明槓。",
+    description: "ポンした{牌}に1枚加える加槓、または他家の捨て牌で行う大明槓。",
     category: "hand",
   },
   雀頭: {
     term: "雀頭",
     reading: "ジャントウ",
     description:
-      "和了形に必要な同じ牌2枚の組み合わせ（アタマ）。{役牌}の場合は2{符}がつく。",
+      "{和了}形に必要な同じ{牌}2枚の組み合わせ（アタマ）。{役牌}の場合は2{符}がつく。",
     category: "hand",
   },
 
   // 和了関連
+  和了: {
+    term: "和了",
+    reading: "ホーラ/アガリ",
+    description: "手牌を完成させて上がること。{ツモ}と{ロン}の2種類がある。",
+    category: "basic",
+  },
   ツモ: {
     term: "ツモ",
     reading: "ツモ",
-    description: "自分で牌を引いて和了すること。{門前}なら2{符}がつく。",
+    description: "自分で{牌}を引いて{和了}すること。{門前}なら2{符}がつく。",
     category: "basic",
     skipRuby: true,
   },
   ロン: {
     term: "ロン",
     reading: "ロン",
-    description: "他家の捨て牌で和了すること。",
+    description: "他家の捨て牌で{和了}すること。",
     category: "basic",
     skipRuby: true,
   },
@@ -111,7 +117,7 @@ export const glossary: Record<string, GlossaryEntry> = {
   副露: {
     term: "副露",
     reading: "フーロ",
-    description: "ポン・チー・カンで他家の牌をもらうこと。鳴きとも言う。",
+    description: "ポン・チー・カンで他家の{牌}をもらうこと。鳴きとも言う。",
     category: "basic",
   },
 
@@ -119,7 +125,7 @@ export const glossary: Record<string, GlossaryEntry> = {
   待ち: {
     term: "待ち",
     reading: "まち",
-    description: "和了に必要な残り1枚の牌、またはその形。",
+    description: "{和了}に必要な残り1枚の{牌}、またはその形。",
     category: "wait",
     skipRuby: true,
   },
@@ -145,7 +151,7 @@ export const glossary: Record<string, GlossaryEntry> = {
   双碰待ち: {
     term: "双碰待ち",
     reading: "シャンポンまち",
-    description: "2つの対子のどちらかで待つ形。0{符}だが和了牌で{刻子}になる。",
+    description: "2つの対子のどちらかで待つ形。0{符}だが{和了}{牌}で{刻子}になる。",
     category: "wait",
   },
   単騎待ち: {
@@ -159,7 +165,7 @@ export const glossary: Record<string, GlossaryEntry> = {
   親: {
     term: "親",
     reading: "おや",
-    description: "東家のプレイヤー。和了時の点数が{子}の1.5倍になる。",
+    description: "東家のプレイヤー。{和了}時の点数が{子}の1.5倍になる。",
     category: "basic",
     skipRuby: true,
   },
@@ -172,10 +178,16 @@ export const glossary: Record<string, GlossaryEntry> = {
   },
 
   // 牌の種類
+  牌: {
+    term: "牌",
+    reading: "パイ/ハイ",
+    description: "麻雀で使用する駒。全136枚で構成され、{数牌}と{字牌}に分類される。",
+    category: "tile",
+  },
   数牌: {
     term: "数牌",
     reading: "シューパイ",
-    description: "{萬子}・{筒子}・{索子}の1〜9の牌。",
+    description: "{萬子}・{筒子}・{索子}の1〜9の{牌}。",
     category: "tile",
   },
   字牌: {
