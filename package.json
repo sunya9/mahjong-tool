@@ -56,10 +56,11 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "sharp"
+      "sharp",
+      "esbuild"
     ],
     "overrides": {
-      "serialize-javascript@<=7.0.2": ">=7.0.3"
+      "serialize-javascript@<7.0.5": ">=7.0"
     }
   }
 }
